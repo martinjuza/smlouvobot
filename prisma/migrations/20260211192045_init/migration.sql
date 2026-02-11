@@ -1,0 +1,90 @@
+-- CreateTable
+CREATE TABLE "Contract" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "token" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "type" TEXT NOT NULL,
+    "language" TEXT NOT NULL DEFAULT 'EN',
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "name" TEXT,
+    "pipedriveId" TEXT,
+    "clientName" TEXT,
+    "clientAddress" TEXT,
+    "clientBusinessId" TEXT,
+    "clientTaxId" TEXT,
+    "clientRegisterCourt" TEXT,
+    "clientRegisterSection" TEXT,
+    "clientRegisterEntry" TEXT,
+    "clientRepresentative" TEXT,
+    "clientEmail" TEXT,
+    "territory" TEXT,
+    "licenseFrom" DATETIME,
+    "licenseTo" DATETIME,
+    "licenseUnlimited" BOOLEAN NOT NULL DEFAULT false,
+    "paymentVariant" TEXT,
+    "feeAmount" TEXT,
+    "feeCurrency" TEXT NOT NULL DEFAULT 'EUR',
+    "installments" TEXT,
+    "revenueShareSchool" TEXT,
+    "revenueSharePublic" TEXT,
+    "promotionalCosts" TEXT,
+    "hasMinGuarantee" BOOLEAN NOT NULL DEFAULT false,
+    "minGuaranteeAmount" TEXT,
+    "minGuaranteeCurrency" TEXT,
+    "hasRevenueCap" BOOLEAN NOT NULL DEFAULT false,
+    "revenueCapAmount" TEXT,
+    "monthlyAmount" TEXT,
+    "deliveryMethod" TEXT NOT NULL DEFAULT 'FTP',
+    "signingDatePrague" TEXT,
+    "signingDateClient" TEXT,
+    "signingPlaceClient" TEXT,
+    "pdfGenerated" BOOLEAN NOT NULL DEFAULT false,
+    "pdfUrl" TEXT
+);
+
+-- CreateTable
+CREATE TABLE "ContractFilm" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "contractId" TEXT NOT NULL,
+    "filmId" TEXT,
+    "title" TEXT NOT NULL,
+    "directors" TEXT,
+    "yearOfProduction" TEXT,
+    "resolution" TEXT NOT NULL DEFAULT '2K',
+    "domemasterFormat" TEXT NOT NULL DEFAULT 'png image sequence domemaster',
+    "soundmix" TEXT NOT NULL DEFAULT '5.1',
+    "meVersionOfSound" BOOLEAN NOT NULL DEFAULT true,
+    "runtime" TEXT,
+    "language" TEXT NOT NULL DEFAULT 'EN',
+    "availableLanguages" TEXT,
+    "selectedLanguage" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ContractFilm_contractId_fkey" FOREIGN KEY ("contractId") REFERENCES "Contract" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Film" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "titleCz" TEXT,
+    "directors" TEXT NOT NULL,
+    "yearOfProduction" TEXT NOT NULL,
+    "resolution" TEXT NOT NULL DEFAULT '2K',
+    "domemasterFormat" TEXT NOT NULL DEFAULT 'png image sequence domemaster',
+    "soundmix" TEXT NOT NULL DEFAULT '5.1',
+    "meVersionOfSound" BOOLEAN NOT NULL DEFAULT true,
+    "runtime" TEXT NOT NULL,
+    "originalLanguage" TEXT NOT NULL DEFAULT 'EN',
+    "availableLanguages" TEXT,
+    "availableDubs" TEXT,
+    "hasTrailerFlat" BOOLEAN NOT NULL DEFAULT true,
+    "hasTrailerDome" BOOLEAN NOT NULL DEFAULT true,
+    "hasPromoMaterials" BOOLEAN NOT NULL DEFAULT true,
+    "googleSheetRow" INTEGER,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Contract_token_key" ON "Contract"("token");
