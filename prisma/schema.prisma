@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Contract {
+  id        String   @id @default(uuid())
+  token     String   @unique @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Contract type: SINGLE_LICENCE or ONE_PLUS
+  type String
+
+  // Language: EN or CZ
+  language String @default("EN")
+
+  // Status: DRAFT, COMPLETED, PDF_GENERATED
+  status String @default("DRAFT")
+
+  // Contract name (auto-generated): "2026-02-05 - Org Name - Film1/ Film2"
+  name String?
+
+  // PipeDrive deal ID
+  pipedriveId String?
+
+  // ---- Client info ----
+  clientName           String?
+  clientAddress        String?
+  clientBusinessId     String?
+  clientTaxId          String?
+  clientRegisterCourt  String?
+  clientRegisterSection String?
+  clientRegisterEntry  String?
+  clientRepresentative String?
+  clientEmail          String?
+
+  // ---- License terms ----
+  // Territory / Planetarium name
+  territory String?
+
+  // License period
+  licenseFrom    DateTime?
+  licenseTo      DateTime?
+  licenseUnlimited Boolean @default(false)
+
+  // ---- Payment ----
+  // For SINGLE_LICENCE: FLAT_FEE, INSTALLMENTS, REVENUE_SHARE
+  // For ONE_PLUS: ANNUAL_ONETIME, MONTHLY_INSTALLMENTS
+  paymentVariant String?
+
+  // Flat fee / Annual fee
+  feeAmount    String?
+  feeCurrency  String @default("EUR")
+
+  // Installments (JSON array of {amount, currency, dueDate})
+  installments String?
+
+  // Revenue share
+  revenueShareSchool  String?
+  revenueSharePublic  String?
+  promotionalCosts    String?
+
+  // Minimum guarantee
+  hasMinGuarantee     Boolean @default(false)
+  minGuaranteeAmount  String?
+  minGuaranteeCurrency String?
+
+  // Revenue share cap
+  hasRevenueCap       Boolean @default(false)
+  revenueCapAmount    String?
+
+  // One+ monthly installment amount
+  monthlyAmount String?
+
+  // ---- Delivery ----
+  // FTP or HDD
+  deliveryMethod String @default("FTP")
+
+  // Signing
+  signingDatePrague String?
+  signingDateClient String?
+  signingPlaceClient String?
+
+  // PDF generated flag
+  pdfGenerated Boolean @default(false)
+  pdfUrl       String?
+
+  // Films (relation)
+  films ContractFilm[]
+}
+
+model ContractFilm {
+  id         String   @id @default(uuid())
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  // Film data (from Google Sheets or manual)
+  filmId     String?
+  title      String
+  directors  String?
+  yearOfProduction String?
+
+  // Technical specs
+  resolution       String @default("2K")
+  domemasterFormat String @default("png image sequence domemaster")
+  soundmix         String @default("5.1")
+  meVersionOfSound Boolean @default(true)
+  runtime          String?
+  language         String @default("EN")
+
+  // Additional available languages/dubs
+  availableLanguages String?
+  selectedLanguage   String?
+
+  createdAt DateTime @default(now())
+}
+
+model Film {
+  id               String @id @default(uuid())
+  title            String
+  titleCz          String?
+  directors        String
+  yearOfProduction String
+  resolution       String @default("2K")
+  domemasterFormat String @default("png image sequence domemaster")
+  soundmix         String @default("5.1")
+  meVersionOfSound Boolean @default(true)
+  runtime          String
+  originalLanguage String @default("EN")
+  availableLanguages String? // JSON array
+  availableDubs    String? // JSON array
+  hasTrailerFlat   Boolean @default(true)
+  hasTrailerDome   Boolean @default(true)
+  hasPromoMaterials Boolean @default(true)
+  googleSheetRow   Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
