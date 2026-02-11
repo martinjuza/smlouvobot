@@ -13,484 +13,531 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function or(val: string | undefined | null, placeholder = "___________"): string {
+function or(
+  val: string | undefined | null,
+  placeholder = "___________"
+): string {
   return val && val.trim() ? val : placeholder;
 }
 
-function filmTechBlock(film: ContractFilmData, index: number): string {
-  return `${index + 1}. „${or(film.title)}"
-   Rozlišení: ${or(film.resolution)}
-   Formát: ${or(film.domemasterFormat)}
-   Zvuková stopa: ${or(film.soundmix)}
-   M&E verze zvuku: ${film.meVersionOfSound ? "Ano" : "Ne"}
-   Délka: ${or(film.runtime)} min
-   Jazyk: ${or(film.language)}`;
-}
-
 // ============================================================
-// SINGLE LICENCE – FLAT FEE (CZ)
+// SHARED: Parties block (Article I)
 // ============================================================
-function singleLicenceFlatFee(d: ContractFormData): string {
-  const filmsList = d.films.map((f, i) => filmTechBlock(f, i)).join("\n\n");
+function partiesBlock(d: ContractFormData): string {
+  return `I.
+Smluvní strany
 
-  return `LICENČNÍ SMLOUVA
-
-uzavřená mezi:
-
-Fulldome Film Society z.s. (dále jen „Poskytovatel")
-Sídlo: Vyšehradská 320/49, Nusle, 128 00 Praha 2, Česká republika
-IČO: 06476317
-Zastoupen: Martin Juza, ředitel
+Krutart s.r.o.
+se sídlem Karlovo náměstí 557/30, Nové Město, 120 00 Praha 2, Česká republika
+zapsaná v obchodním rejstříku vedeném Městským soudem v Praze, oddíl C, vložka 233141
+IČ: 035 33 450, DIČ: CZ03533450
+Číslo účtu:
+IBAN:
+SWIFT: KOMBCZPPXXX
+zastoupená MgA. Martinem Jůzou, jednatelem
+(dále jen „Krutart")
 
 a
 
-${or(d.clientName)} (dále jen „Nabyvatel")
-Sídlo: ${or(d.clientAddress)}
-IČO: ${or(d.clientBusinessId)}
+${or(d.clientName)}
+se sídlem: ${or(d.clientAddress)}
+IČ: ${or(d.clientBusinessId)}
 DIČ: ${or(d.clientTaxId)}
-Zapsán v: ${or(d.clientRegisterCourt)}, oddíl ${or(d.clientRegisterSection)}, vložka ${or(d.clientRegisterEntry)}
-Zastoupen: ${or(d.clientRepresentative)}
+zastoupená ${or(d.clientRepresentative)}
+(dále jen „klient")
 
-(dále jednotlivě jako „Strana" nebo společně jako „Strany")
+uzavírají tuto
 
-PREAMBULE:
+licenční smlouvu`;
+}
 
-Poskytovatel je spolek, jehož posláním je propagace a distribuce fulldome obsahu po celém světě. Poskytovatel disponuje potřebnými právy a oprávněními k udělení licence na níže uvedený(é) Film(y) pro fulldome projekce.
+// ============================================================
+// SHARED: Film tech block for Single Licence (Article III §2)
+// ============================================================
+function singleFilmTechBlock(
+  film: ContractFilmData,
+  deliveryMethod: string
+): string {
+  return `a) Kopie filmu
+   − Technické specifikace kopie:
+      − rozlišení: ${or(film.resolution)}
+      − formát domemaster: ${or(film.domemasterFormat)}
+      − zvuková stopa: ${or(film.soundmix)}
+      − ME verze zvuku: ${film.meVersionOfSound ? "Ano" : "Ne"}
+      − délka: ${or(film.runtime)} min
+      − jazyk: ${or(film.language)}
+   − Způsob a datum zpřístupnění kopie:
+      − Společnost Krutart je povinna poskytnout kopii filmu klientovi nejpozději do 14 dnů od podpisu této licenční smlouvy.
+      − ${deliveryMethod === "FTP" ? "Krutart poskytne klientovi přístup ke svému FTP serveru, aby si mohl kopii filmu bezplatně stáhnout." : "Krutart dodá klientovi fyzický pevný disk obsahující kopii filmu za dodatečný manipulační poplatek ve výši 300 $."}
 
-Nabyvatel provozuje fulldome kino/planetárium a přeje si získat právo na veřejné promítání Filmu(ů) ve svém zařízení.
+b) Další materiály
+   − Specifikace dalších materiálů:
+      − upoutávka ve flat a fulldome verzi
+      − propagační materiály (plakáty atd.)
+   − Způsob a datum poskytnutí materiálů:
+      − Společnost Krutart je povinna poskytnout další materiály klientovi nejpozději do 14 dnů od podpisu této licenční smlouvy.
+      − Krutart dodá marketingové materiály klientovi stejným způsobem, jaký byl zvolen pro dodání filmu (buď prostřednictvím FTP, nebo na fyzickém pevném disku).`;
+}
 
-Strany se dohodly na následujících podmínkách:
+// ============================================================
+// SINGLE LICENCE: Base (Articles I–III)
+// ============================================================
+function singleLicenceBase(d: ContractFormData): string {
+  const film = d.films[0];
+  const filmInfo =
+    d.films.length > 1
+      ? d.films
+          .map(
+            (f, i) =>
+              `   ${i + 1}. název: ${or(f.title)}, režisér(ři): ${or(f.directors)}, rok výroby: ${or(f.yearOfProduction)}`
+          )
+          .join("\n")
+      : `   název: ${or(film?.title)}, režisér(ři): ${or(film?.directors)}, rok výroby: ${or(film?.yearOfProduction)}`;
 
-ČLÁNEK I – DEFINICE
+  const filmLabel =
+    d.films.length > 1 ? "audiovizuální díla" : "audiovizuální dílo";
+  const filmRef =
+    d.films.length > 1 ? '(dále jen „filmy")' : '(dále jen „film")';
 
-1.1. „Film(y)" znamená následující fulldome produkci(e):
-${filmsList}
+  const filmTechBlocks = d.films
+    .map((f, i) => {
+      const prefix =
+        d.films.length > 1 ? `Film ${i + 1}: „${or(f.title)}"\n` : "";
+      return prefix + singleFilmTechBlock(f, d.deliveryMethod);
+    })
+    .join("\n\n");
 
-1.2. „Území" znamená: ${or(d.territory)}
+  const licenseTimeFrame = d.licenseUnlimited
+    ? "bez omezení (tj. na celou dobu trvání práv k filmu)"
+    : `od ${formatDate(d.licenseFrom)} do ${formatDate(d.licenseTo)}`;
 
-1.3. „Licenční období" znamená: ${d.licenseUnlimited ? "Neomezené (trvalá licence)" : `od ${formatDate(d.licenseFrom)} do ${formatDate(d.licenseTo)}`}
+  return `LICENČNÍ SMLOUVA
 
-ČLÁNEK II – UDĚLENÍ LICENCE
+${partiesBlock(d)}
 
-2.1. Poskytovatel tímto uděluje Nabyvateli nevýhradní licenci k veřejnému promítání Filmu(ů) na Území po dobu Licenčního období.
+II.
+Předmět smlouvy
 
-2.2. Nabyvatel může promítat Film(y) jak veřejnému, tak školnímu/vzdělávacímu publiku na Území.
+1. Společnost Krutart je profesionálním producentem filmů, seriálů a dalších audiovizuálních a multimediálních obsahů. Společnost Krutart vyrobila následující ${filmLabel}:
+${filmInfo}
+   ${filmRef}.
+2. Klient si přeje získat souhlas společnosti Krutart k použití filmu definovaného v této smlouvě za podmínek uvedených v této smlouvě.
+3. Kromě konkrétních podmínek stanovených v této smlouvě se vztah mezi stranami řídí také všeobecnými podmínkami připojenými k této smlouvě jako příloha č. 1.
 
-2.3. Nabyvatel nesmí bez předchozího písemného souhlasu Poskytovatele udělovat podlicence, distribuovat, kopírovat ani zpřístupňovat Film(y) třetím stranám.
+III.
+Licence
 
-2.4. Nabyvatel smí Film(y) používat výhradně pro fulldome projekci a nesmí Film(y) jakýmkoli způsobem konvertovat, upravovat ani modifikovat bez předchozího písemného souhlasu Poskytovatele.
+1. Společnost Krutart tímto uděluje klientovi oprávnění k použití filmu (licenci) v rozsahu stanoveném níže:
+   − pro následující způsoby použití:
+      − sdílení filmu v nehmotné podobě veřejnosti formou provozování ze záznamu (práva na promítání v kinech),
+      − vytváření kopií filmu za výše uvedeným účelem;
+   − v následujícím časovém rámci: ${licenseTimeFrame}
+   − na následujícím území (země a/nebo konkrétní planetárium): ${or(d.territory)} (dále jen „planetárium");
+   − v následujícím rozsahu (počet promítání): bez omezení;
+   − nevýhradně, tj. společnost Krutart není omezena v možnosti sama film užívat nebo umožnit jeho užití jiným osobám za výše uvedených podmínek.
 
-ČLÁNEK III – LICENČNÍ POPLATEK A PLATBA
+2. Za účelem řádného využití licence podle této smlouvy je společnost Krutart povinna poskytnout klientovi následující materiály a klient je oprávněn je používat v souvislosti s využíváním filmu za výše uvedených licenčních podmínek:
 
-3.1. Licenční poplatek za Film(y) činí: ${or(d.feeAmount)} ${or(d.feeCurrency)} (jednorázová platba).
+${filmTechBlocks}`;
+}
 
-3.2. Licenční poplatek bude Nabyvatelem uhrazen na bankovní účet Poskytovatele do 30 dnů od podpisu této Smlouvy.
+// ============================================================
+// SINGLE LICENCE: Payment – Flat Fee
+// ============================================================
+function singlePaymentFlatFee(d: ContractFormData): string {
+  return `IV.
+Odměna
 
-3.3. Bankovní údaje:
-   Majitel účtu: Fulldome Film Society z.s.
-   Banka: Fio banka, a.s.
-   IBAN: CZ2120100000002902248837
-   SWIFT/BIC: FIOBCZPPXXX
+1. Klient je povinen zaplatit společnosti Krutart poplatek za poskytnutí licence podle této smlouvy v celkové výši ${or(d.feeAmount)} ${or(d.feeCurrency)} bez DPH.
 
-3.4. Veškeré platby budou provedeny bez jakýchkoli bankovních poplatků k tíži Poskytovatele. Veškeré bankovní poplatky nese Nabyvatel.
+2. Licenční poplatek uvedený v předchozím odstavci bude uhrazen na bankovní účet společnosti Krutart uvedený v záhlaví této smlouvy nejpozději do 14 dnů od podpisu této smlouvy na základě příslušného daňového dokladu – faktury společnosti Krutart.`;
+}
 
-ČLÁNEK IV – DODÁNÍ
+// ============================================================
+// SINGLE LICENCE: Payment – Installments
+// ============================================================
+function singlePaymentInstallments(d: ContractFormData): string {
+  const installmentLines = d.installments
+    .map(
+      (inst, i) =>
+        `   − ${i + 1}. splátka ve výši ${or(inst.amount)} ${or(inst.currency)} bez DPH bude uhrazena společnosti Krutart nejpozději do ${formatDate(inst.dueDate)};`
+    )
+    .join("\n");
 
-4.1. Poskytovatel dodá Film(y) Nabyvateli prostřednictvím ${d.deliveryMethod === "FTP" ? "FTP odkazu ke stažení" : "externího HDD (zaslaného na náklady Nabyvatele)"} do 14 dnů od obdržení podepsané Smlouvy a potvrzení platby.
+  return `IV.
+Odměna
 
-4.2. Po dodání Nabyvatel potvrdí přijetí Filmu(ů) a ověří jejich technickou kvalitu do 7 dnů. Pokud Nabyvatel v této lhůtě neoznámí Poskytovateli žádné problémy, budou Film(y) považovány za přijaté.
+1. Klient je povinen zaplatit společnosti Krutart poplatek za poskytnutí licence podle této smlouvy v celkové výši ${or(d.feeAmount)} ${or(d.feeCurrency)} bez DPH.
 
-ČLÁNEK V – PROPAGAČNÍ MATERIÁLY
+2. Licenční poplatek uvedený v předchozím odstavci bude uhrazen na bankovní účet společnosti Krutart uvedený v záhlaví této smlouvy na základě příslušných daňových dokladů – faktur společnosti Krutart, a to v následujících splátkách:
 
-5.1. Poskytovatel poskytne Nabyvateli dostupné propagační materiály (trailery, plakáty, fotografie) za účelem propagace promítání Filmu(ů) na Území.
+${installmentLines || "   (Splátky nebyly definovány)"}`;
+}
 
-5.2. Nabyvatel se zavazuje uvádět Poskytovatele a původní producenty ve všech propagačních materiálech souvisejících s Filmem(y).
+// ============================================================
+// SINGLE LICENCE: Payment – Revenue Share
+// ============================================================
+function singlePaymentRevenueShare(d: ContractFormData): string {
+  let minGuaranteeClause = "";
 
-ČLÁNEK VI – VÝKAZNICTVÍ
+  if (d.hasMinGuarantee && !d.hasRevenueCap) {
+    minGuaranteeClause = `
 
-6.1. Nabyvatel poskytne Poskytovateli roční zprávy o promítání zahrnující počet projekcí a údaje o návštěvnosti, a to nejpozději do 31. ledna každého kalendářního roku za předcházející rok.
+3. Strany se dohodly, že za celou dobu trvání licence poskytne klient společnosti Krutart podílovou odměnu v celkové výši minimálně ${or(d.minGuaranteeAmount)} ${or(d.minGuaranteeCurrency)} (minimální garance). Pokud výsledný součet podílových odměn nedosáhne výše minimální garance uvedené v předchozí větě, je společnost Krutart oprávněna účtovat klientovi v poslední faktuře zaslané klientovi po skončení licenčního období doplatek ve výši odpovídající rozdílu mezi výší sjednané minimální garance a výší celkové dosud uhrazené podílové odměny.`;
+  } else if (d.hasMinGuarantee && d.hasRevenueCap) {
+    minGuaranteeClause = `
 
-ČLÁNEK VII – UKONČENÍ
+3. Strany se dohodly, že za celou dobu trvání licence klient poskytne společnosti Krutart podílovou odměnu v celkové výši minimálně ${or(d.minGuaranteeAmount)} ${or(d.minGuaranteeCurrency)} (minimální garance). Pokud výsledný součet podílových odměn nedosáhne výše minimální garance uvedené v předchozí větě, je společnost Krutart oprávněna účtovat klientovi v poslední faktuře zaslané klientovi po skončení licenčního období doplatek ve výši odpovídající rozdílu mezi výší sjednané minimální garance a výší celkové dosud uhrazené podílové odměny. Strany se zároveň dohodly, že klient neuhradí společnosti Krutart v souhrnu více než ${or(d.revenueCapAmount)} ${or(d.feeCurrency)} jako podíl na výnosech. Pokud tedy výše podílu na výnosech kdykoli během platnosti licence dosáhne uvedené částky a tato částka bude společnosti Krutart řádně uhrazena, není společnost Krutart oprávněna požadovat od klienta žádný další podíl na výnosech ani paušální poplatek za poskytnutí licence podle této smlouvy.`;
+  }
 
-7.1. Každá Strana může tuto Smlouvu vypovědět s 90denní písemnou výpovědní lhůtou.
+  return `IV.
+Odměna
 
-7.2. Poskytovatel může tuto Smlouvu okamžitě vypovědět, pokud Nabyvatel podstatně poruší jakékoliv ustanovení této Smlouvy a toto porušení nenapraví do 30 dnů od písemného upozornění.
+1. Klient je povinen zaplatit společnosti Krutart podíl za poskytnutí licence podle této smlouvy ve výši:
+   − ${or(d.revenueShareSchool)} % z ceny každé prodané vstupenky v případě speciálních projekcí filmu pro školy;
+   − ${or(d.revenueSharePublic)} % z ceny každé prodané vstupenky v případě promítání filmu pro širokou veřejnost.
 
-7.3. Po ukončení Nabyvatel ukončí veškeré promítání Filmu(ů) a smaže/zničí veškeré kopie Filmu(ů) v jeho držení do 30 dnů, přičemž toto smazání písemně potvrdí Poskytovateli.
+   Klient odečte DPH (pokud je uplatnitelná) z ceny každé vstupenky před výpočtem podílu pro společnost Krutart.
 
-ČLÁNEK VIII – ODPOVĚDNOST A ZÁRUKY
+   Zároveň se strany dohodly, že společnost Krutart má nárok na podíl pouze od okamžiku, kdy jeho celková výše přesáhne náklady klienta na propagaci a distribuci dohodnuté na pevnou paušální částku ve výši ${or(d.promotionalCosts)} ${or(d.feeCurrency)}.
 
-8.1. Poskytovatel zaručuje, že má právo a oprávnění udělit licenci popsanou v této Smlouvě.
+2. Klient je povinen zaslat na e-mailovou adresu společnosti Krutart krutart@krutart.cz písemné podrobné vyúčtování podílu za uplynulé kalendářní čtvrtletí; toto vyúčtování musí být vždy zasláno během prvních 15 dnů následujícího kalendářního čtvrtletí. Na základě tohoto vyúčtování vystaví společnost Krutart klientovi fakturu za podíl za předchozí čtvrtletí. K této odměně bude připočtena odpovídající DPH. Poplatek za podíl zaplatí klient společnosti Krutart na základě vystavené faktury, a to nejpozději do 15 dnů od jejího vystavení. V případě, že se klient zpozdí se zasláním řádného podrobného písemného výkazu poplatku za podíl o více než 30 dnů, je společnost Krutart oprávněna v každém takovém případě účtovat klientovi smluvní pokutu ve výši 2000 Kč za každý den prodlení a zároveň je společnost Krutart oprávněna tuto smlouvu jednostranně ukončit odstoupením; takové odstoupení od smlouvy nemá vliv na právo společnosti Krutart na uvedenou smluvní pokutu.${minGuaranteeClause}`;
+}
 
-8.2. Poskytovatel neodpovídá za žádné nepřímé, následné nebo nahodilé škody vzniklé v souvislosti s používáním Filmu(ů).
+// ============================================================
+// SINGLE LICENCE: Signatures + Annex (GTC)
+// ============================================================
+function singleLicenceClosing(d: ContractFormData): string {
+  return `
 
-8.3. Nabyvatel odpovídá výhradně za získání jakýchkoli místních povolení nebo souhlasů potřebných pro veřejné promítání.
+Strany prohlašují, že porozuměly obsahu této smlouvy a souhlasí s ním, a to jak v celku, tak v jednotlivých ustanoveních, na důkaz čehož připojují své podpisy:
 
-ČLÁNEK IX – DŮVĚRNOST
-
-9.1. Obě Strany se zavazují zachovávat důvěrnost finančních podmínek této Smlouvy a veškerých proprietárních informací vyměněných v průběhu tohoto vztahu.
-
-ČLÁNEK X – ROZHODNÉ PRÁVO A ŘEŠENÍ SPORŮ
-
-10.1. Tato Smlouva se řídí a vykládá v souladu s právním řádem České republiky.
-
-10.2. Veškeré spory vyplývající z této Smlouvy budou řešeny nejprve jednáním v dobré víře. Pokud nebudou vyřešeny do 30 dnů, budou předloženy příslušným soudům České republiky.
-
-ČLÁNEK XI – ZÁVĚREČNÁ USTANOVENÍ
-
-11.1. Tato Smlouva představuje úplnou dohodu mezi Stranami a nahrazuje veškerá předchozí jednání, prohlášení či dohody týkající se tohoto předmětu.
-
-11.2. Veškeré změny této Smlouvy musí být provedeny písemně a podepsány oběma Stranami.
-
-11.3. Tato Smlouva je vyhotovena ve dvou stejnopisech, z nichž každá Strana obdrží jeden.
-
-11.4. Tato Smlouva nabývá účinnosti podpisem obou Stran.
+Přílohy: Příloha č. 1: Všeobecné obchodní podmínky
 
 
 V Praze dne ${formatDate(d.signingDatePrague)}
 
-_______________________________
-Fulldome Film Society z.s.
-Martin Juza, ředitel
+Krutart:
+
+___________________________
+Krutart s.r.o.
+MgA. Martin Jůza, jednatel
 
 
 V ${or(d.signingPlaceClient)} dne ${formatDate(d.signingDateClient)}
 
-_______________________________
+Klient:
+
+___________________________
 ${or(d.clientName)}
-${or(d.clientRepresentative)}`;
+${or(d.clientRepresentative)}
+
+
+${singleGTC()}`;
 }
 
 // ============================================================
-// SINGLE LICENCE – INSTALLMENTS (CZ)
+// SINGLE LICENCE: General Terms and Conditions (Annex 1)
 // ============================================================
+function singleGTC(): string {
+  return `Příloha č. 1
+k licenční smlouvě
+
+Všeobecné obchodní podmínky
+
+a) Obecné licenční podmínky
+
+1. Souhlas s použitím filmu poskytnutý na základě této smlouvy zahrnuje následující typy souhlasů:
+   a. souhlas s užitím zvukově obrazového záznamu filmu;
+   b. souhlas s užitím filmu jako autorského díla jeho režiséra;
+   c. souhlas s užitím autorských děl a uměleckých výkonů použitých ve filmu
+   (všechny typy souhlasů podle tohoto ustanovení pro účely této smlouvy jsou dále společně označovány jako „licence").
+
+2. Klient je oprávněn používat snímky obrazovky nebo výňatky z filmu (v celkové délce nejvýše 2 minuty) k výrobě propagačních materiálů určených k oznámení použití filmu za podmínek stanovených v této smlouvě a používat tyto materiály v obvyklém rozsahu. Klient však bere na vědomí, že ani takové použití částí filmu nesmí mít vliv na uměleckou hodnotu filmu.
+
+3. Klient je povinen ve všech propagačních materiálech týkajících se použití filmu podle smlouvy vhodným způsobem uvést, že Krutart je držitelem autorských práv k filmu, např. ve formě symbolu vyhrazených autorských práv nebo loga Krutart (například: © Krutart).
+
+4. Klient není oprávněn provádět žádné změny, úpravy, doplňky, spojení nebo jiné zásahy do filmu, pokud k tomu společnost Krutart neudělí výslovný písemný souhlas.
+
+5. Klient není oprávněn udělovat další sublicence ani jiným způsobem převádět práva z licence na třetí osoby.
+
+6. Po uplynutí sjednané doby platnosti licence je klient povinen neprodleně smazat všechny soubory obsahující film a doprovodné materiály, ukončit veškeré používání filmu a odstranit jej ze svého programu. Na žádost společnosti Krutart je klient povinen písemně potvrdit, že tyto povinnosti splnil. V případě porušení těchto povinností ze strany klienta je společnost Krutart oprávněna v každém případě požadovat od klienta smluvní pokutu ve výši rovnající se celkovému licenčnímu poplatku zaplacenému klientem společnosti Krutart podle článku IV této smlouvy.
+
+b) Překlad filmu
+
+7. Klient je oprávněn vytvořit dabovanou verzi nebo titulky k filmu při použití licence podle smlouvy.
+
+8. Klient je povinen poskytnout každý takový překlad (tj. titulky a/nebo dabing) společnosti Krutart na vhodném médiu (potvrzeném společností Krutart) bez zbytečného odkladu po jeho vytvoření, nejpozději však do 1 měsíce od tohoto okamžiku.
+
+9. Pokud jde o výrobu titulků: Klient tímto bezplatně uděluje společnosti Krutart oprávnění k použití každého takového titulku v souvislosti s filmem bez (územního, časového nebo jiného) omezení, ale vždy mimo planetárium (práva k použití titulků v planetáriu náleží výlučně klientovi); společnost Krutart je oprávněna tato práva sublicencovat třetím stranám.
+
+10. Pokud jde o výrobu dabingu: Klient je povinen dodržovat technické parametry týkající se dabingu a stanovené společností Krutart v protokolu, který bude klientovi za tímto účelem poskytnut společností Krutart. Klient je rovněž povinen poskytnout společnosti Krutart rozpočet na výrobu dabingu před zahájením výroby dabingu. Pokud po přijetí finálního dabingu od klienta (viz odstavec 8 výše) společnost Krutart potvrdí, že dabing splňuje stanovené technické parametry, je společnost Krutart oprávněna (nikoli však povinna) požádat klienta o udělení licence na tento dabing, která bude zahrnovat oprávnění k použití tohoto dabingu v souvislosti s filmem bez (územních, časových nebo jiných) omezení, avšak vždy mimo planetárium (práva na použití dabingu v planetáriu zůstávají výlučně klientovi); společnost Krutart je oprávněna tato práva sublicencovat třetím stranám. Pokud bude na žádost společnosti Krutart udělena licence k dabingu v souladu s předchozí větou, zavazuje se společnost Krutart poskytnout klientovi slevu z ceny licence k filmu uvedené v článku IV smlouvy ve výši 1/2 dohodnutého rozpočtu na výrobu dabingu.
+
+11. Klient je v každém případě povinen vypořádat práva třetích osob k jednotlivým překladům (včetně práv hlasových umělců v případě dabingu, pokud bude licence k dabingu udělena, viz odstavec 10 výše) svým jménem, na své náklady a v rozsahu, který mu umožňuje udělit příslušnou licenci společnosti Krutart v souladu s výše uvedenými podmínkami.
+
+c) Sankce za opožděné platby
+
+12. V případě, že se klient zpozdí s platbou odměny podle této smlouvy, zavazuje se zaplatit společnosti Krutart úrok z prodlení ve výši 0,05 % za každý celý den prodlení.
+
+13. V případě, že se klient opozdí s platbou jakékoli části odměny o více než 30 dní, je společnost Krutart oprávněna od smlouvy odstoupit s okamžitou účinností. V takovém případě zůstává právo na úrok z prodlení vzniklý do okamžiku odstoupení od této smlouvy společnosti Krutart. Pro vyloučení pochybností se sjednává, že odstoupení od smlouvy nebo zaplacení úroků z prodlení nemá vliv na právo společnosti Krutart na zaplacení původní dlužné částky.
+
+d) Různé
+
+14. Smlouva se řídí právními předpisy České republiky. Veškeré spory budou řešeny soudem s věcnou příslušností v České republice; územní příslušnost soudu se určí podle sídla společnosti Krutart.
+
+15. Obsah smlouvy je důvěrný, včetně všech finančních ujednání a dohodnutého rozsahu a podmínek licence.
+
+16. Změny smlouvy musí být provedeny písemnou formou (což pro účely tohoto ustanovení nezahrnuje elektronickou komunikaci) a podpisy zástupců obou stran musí být na stejném dokumentu.
+
+17. Odpověď strany podle § 1740 odst. 3 občanského zákoníku obsahující změnu nebo odchylku nepředstavuje přijetí nabídky k uzavření smlouvy, i když se podmínky nabídky podstatně nemění.`;
+}
+
+// ============================================================
+// SINGLE LICENCE: Combined generators
+// ============================================================
+function singleLicenceFlatFee(d: ContractFormData): string {
+  return (
+    singleLicenceBase(d) +
+    "\n\n" +
+    singlePaymentFlatFee(d) +
+    singleLicenceClosing(d)
+  );
+}
+
 function singleLicenceInstallments(d: ContractFormData): string {
-  const base = singleLicenceFlatFee(d);
+  return (
+    singleLicenceBase(d) +
+    "\n\n" +
+    singlePaymentInstallments(d) +
+    singleLicenceClosing(d)
+  );
+}
 
-  const installmentLines = d.installments
-    .map(
-      (inst, i) =>
-        `   ${i + 1}. ${or(inst.amount)} ${or(inst.currency)} – splatnost do ${formatDate(inst.dueDate)}`
-    )
-    .join("\n");
-
-  const paymentSection = `3.1. Celkový licenční poplatek za Film(y) činí: ${or(d.feeAmount)} ${or(d.feeCurrency)}, splatný v následujících splátkách:
-
-${installmentLines || "   (Splátky nebyly definovány)"}
-
-3.2. Každá splátka bude Nabyvatelem uhrazena na bankovní účet Poskytovatele do příslušného data splatnosti.`;
-
-  return base.replace(
-    /3\.1\. Licenční poplatek za Film\(y\) činí:.*?\n\n3\.2\. Licenční poplatek bude.*?podpisu této Smlouvy\./s,
-    paymentSection
+function singleLicenceRevenueShare(d: ContractFormData): string {
+  return (
+    singleLicenceBase(d) +
+    "\n\n" +
+    singlePaymentRevenueShare(d) +
+    singleLicenceClosing(d)
   );
 }
 
 // ============================================================
-// SINGLE LICENCE – REVENUE SHARE (CZ)
+// ONE+: Film catalogue entry (for Annex 1)
 // ============================================================
-function singleLicenceRevenueShare(d: ContractFormData): string {
-  const filmsList = d.films.map((f, i) => filmTechBlock(f, i)).join("\n\n");
+function onePlusFilmCatalogueEntry(
+  film: ContractFilmData,
+  index: number,
+  deliveryMethod: string
+): string {
+  return `${index + 1}. název: ${or(film.title)}, režisér(ři): ${or(film.directors)}, rok výroby: ${or(film.yearOfProduction)}
 
-  const minGuaranteeClause = d.hasMinGuarantee
-    ? `3.3. Minimální garance: Nabyvatel zaručuje minimální roční platbu ve výši ${or(d.minGuaranteeAmount)} ${or(d.minGuaranteeCurrency)} bez ohledu na skutečné dosažené příjmy. Tato částka bude uhrazena do konce každého licenčního roku.`
-    : "";
+   a) Kopie filmu
+      − Technické specifikace kopie:
+         − rozlišení: ${or(film.resolution)}
+         − formát domemasteru: ${or(film.domemasterFormat)}
+         − zvuková stopa: ${or(film.soundmix)}
+         − ME verze zvuku: ${film.meVersionOfSound ? "Ano" : "Ne"}
+         − délka: ${or(film.runtime)} min
+         − jazyk: ${or(film.language)}
+      − Způsob a datum zpřístupnění kopie:
+         − Společnost Krutart je povinna poskytnout kopii filmu klientovi nejpozději do 14 dnů od podpisu licenční smlouvy.
+         − ${deliveryMethod === "FTP" ? "Krutart poskytne klientovi přístup ke svému FTP serveru, aby si mohl kopii filmu bezplatně stáhnout." : "Krutart dodá klientovi fyzický pevný disk obsahující kopii filmu za dodatečný manipulační poplatek ve výši 300 $."}
 
-  const revenueCapClause = d.hasRevenueCap
-    ? `3.4. Strop příjmů: Celkové platby z podílu na příjmech nepřesáhnou ${or(d.revenueCapAmount)} ${or(d.feeCurrency)} za celé Licenční období.`
-    : "";
+   b) Další materiály
+      − Specifikace dalších materiálů:
+         − upoutávka ve flat a fulldome verzi
+         − propagační materiály (plakát atd.)
+      − Způsob a datum zpřístupnění materiálů:
+         − Společnost Krutart je povinna poskytnout další materiály klientovi nejpozději do 14 dnů od podpisu licenční smlouvy.
+         − Krutart dodá marketingové materiály klientovi stejným způsobem, jaký byl zvolen pro dodání filmu (buď prostřednictvím FTP, nebo na fyzickém pevném disku).`;
+}
 
-  return `LICENČNÍ SMLOUVA (PODÍL NA PŘÍJMECH)
+// ============================================================
+// ONE+: Base (Articles I–III)
+// ============================================================
+function onePlusBase(d: ContractFormData): string {
+  const licenseFrom = formatDate(d.licenseFrom);
+  const licenseTo = formatDate(d.licenseTo);
 
-uzavřená mezi:
+  return `LICENČNÍ SMLOUVA
 
-Fulldome Film Society z.s. (dále jen „Poskytovatel")
-Sídlo: Vyšehradská 320/49, Nusle, 128 00 Praha 2, Česká republika
-IČO: 06476317
-Zastoupen: Martin Juza, ředitel
+${partiesBlock(d)}
 
-a
+II.
+Předmět smlouvy
 
-${or(d.clientName)} (dále jen „Nabyvatel")
-Sídlo: ${or(d.clientAddress)}
-IČO: ${or(d.clientBusinessId)}
-DIČ: ${or(d.clientTaxId)}
-Zapsán v: ${or(d.clientRegisterCourt)}, oddíl ${or(d.clientRegisterSection)}, vložka ${or(d.clientRegisterEntry)}
-Zastoupen: ${or(d.clientRepresentative)}
+1. Společnost Krutart je profesionálním producentem filmů, seriálů a dalších audiovizuálních a multimediálních obsahů. Společnost Krutart vyrobila audiovizuální díla uvedená v příloze č. 1 této smlouvy (dále jen „filmy"). Pro účely této smlouvy zahrnuje pojem „filmy" kromě filmů uvedených v příloze č. 1 také všechny ostatní fulldome filmy, jejichž produkci společnost Krutart dokončí během dohodnuté licenční doby (za kterou klient zaplatil předplatné podle článku IV.), jak je uvedeno v článku III, odstavci 1. Společnost Krutart se zavazuje informovat klienta e-mailem na adresu ${or(d.clientEmail)} o všech filmech, které budou nově vyrobeny společností Krutart během dohodnuté licenční doby, přičemž společnost Krutart poskytne klientovi podrobné informace o každém takovém novém filmu, včetně specifikací jeho kopie a specifikací dalších souvisejících materiálů (analogicky k tomu, jak jsou tyto specifikace uvedeny pro stávající filmy v příloze č. 1 této smlouvy). Klient bere na vědomí, že společnost Krutart nezaručuje konkrétní nebo minimální počet nově vyrobených filmů během licenční doby.
 
-(dále jednotlivě jako „Strana" nebo společně jako „Strany")
+2. Klient si přeje získat souhlas společnosti Krutart k použití filmů definovaných v této smlouvě za podmínek uvedených v této smlouvě. Licence udělená touto smlouvou se vztahuje na předplacenou službu společnosti Krutart s názvem Krutart One+.
 
-PREAMBULE:
+3. Kromě konkrétních podmínek stanovených v této smlouvě se vztah mezi stranami řídí také všeobecnými podmínkami připojenými k této smlouvě jako příloha č. 2.
 
-Poskytovatel je spolek, jehož posláním je propagace a distribuce fulldome obsahu po celém světě. Poskytovatel disponuje potřebnými právy k udělení licence na níže uvedený(é) Film(y) pro fulldome projekce.
+III.
+Licence
 
-Nabyvatel provozuje fulldome kino/planetárium a přeje si získat právo na veřejné promítání Filmu(ů) ve svém zařízení na základě podílu na příjmech.
+1. Společnost Krutart tímto uděluje klientovi oprávnění k použití filmů (licenci) v rozsahu stanoveném níže:
+   − pro následující způsoby použití:
+      − sdílení filmů v nehmotné podobě veřejnosti formou provozování ze záznamu (práva na promítání v kinech),
+      − vytváření kopií filmů za výše uvedeným účelem;
+   − v následujícím časovém rámci: 24 měsíců, konkrétně od ${licenseFrom} do ${licenseTo}; pokud nejpozději 30 dní před koncem sjednané doby platnosti licence žádná ze stran této smlouvy neoznámí druhé straně písemně (alespoň e-mailem) svůj záměr tuto smlouvu vypovědět, doba platnosti licence se automaticky prodlouží o dalších 12 měsíců, a to i opakovaně, tj. toto automatické prodlužování bude pokračovat, dokud jedna ze stran neoznámí druhé straně dohodnutým způsobem svůj záměr ukončit smlouvu na konci aktuálního licenčního období; společnost Krutart se zavazuje vždy písemně (e-mailem) nejméně 45 dní před koncem aktuálního licenčního období informovat klienta o blížícím se konci tohoto licenčního období;
+   − na následujícím území – kupole/planetárium/mobilní projekční jednotka: ${or(d.territory)} (dále jen „planetárium");
+   − v následujícím rozsahu (počet promítání): bez omezení;
+   − nevýhradně, tj. společnost Krutart není omezena v možnosti sama filmy užívat nebo umožnit jejich užití jiným osobám za výše uvedených podmínek.
 
-Strany se dohodly na následujících podmínkách:
+2. Za účelem řádného využití licence podle této smlouvy je společnost Krutart povinna poskytnout klientovi kopie filmů a doprovodných materiálů podle podmínek uvedených v příloze č. 1 a klient je oprávněn je používat v souvislosti s využíváním filmů za výše uvedených licenčních podmínek. V případě filmů nově vyrobených společností Krutart během dohodnuté licenční doby (viz článek II odst. 1 této smlouvy) dohodnou strany podmínky dodání kopií těchto filmů a doprovodných materiálů prostřednictvím e-mailu.`;
+}
 
-ČLÁNEK I – DEFINICE
+// ============================================================
+// ONE+: Payment – Annual
+// ============================================================
+function onePlusPaymentAnnual(d: ContractFormData): string {
+  return `IV.
+Odměna
 
-1.1. „Film(y)" znamená následující fulldome produkci(e):
-${filmsList}
+1. Klient je povinen zaplatit společnosti Krutart poplatek za poskytnutí licence podle této smlouvy v celkové výši ${or(d.feeAmount)} ${or(d.feeCurrency)} bez DPH za každých 12 měsíců dohodnuté doby trvání licence.
 
-1.2. „Území" znamená: ${or(d.territory)}
+2. Celý roční licenční poplatek uvedený v předchozím odstavci bude uhrazen na bankovní účet společnosti Krutart uvedený v záhlaví této smlouvy na základě příslušného daňového dokladu – faktury společnosti Krutart vystavené během prvního měsíce příslušného 12měsíčního licenčního období. Tato faktura je splatná do 15 dnů od data vystavení.
 
-1.3. „Licenční období" znamená: ${d.licenseUnlimited ? "Neomezené (trvalá licence)" : `od ${formatDate(d.licenseFrom)} do ${formatDate(d.licenseTo)}`}
+3. Společnost Krutart je oprávněna kdykoli během sjednané doby platnosti licence písemně (alespoň e-mailem) oznámit klientovi zvýšení ročního licenčního poplatku pro následující 12měsíční licenční období. Pokud klient s takovým zvýšením nesouhlasí, je oprávněn tuto smlouvu písemně (alespoň e-mailem) vypovědět do 30 dnů od obdržení takového oznámení od společnosti Krutart, s účinností ke konci aktuálního licenčního období. Pokud klient nezašle společnosti Krutart písemnou výpověď v souladu s předchozí větou, má se za to, že klient s takovým zvýšením ročního licenčního poplatku souhlasí; v takovém případě se tento licenční poplatek automaticky zvýší pro příslušné následující 12měsíční období (a také pro všechna pozdější 12měsíční období, pokud bude licence prodloužena v souladu s touto smlouvou) a podmínky této smlouvy budou odpovídajícím způsobem změněny (bez nutnosti přijmout písemný dodatek); pokud tato smlouva stanoví rozdělení ročního licenčního poplatku na splátky, všechny tyto splátky se proporcionálně zvýší tak, aby v součtu odpovídaly nové výši ročního licenčního poplatku.`;
+}
 
-1.4. „Čistý příjem" znamená hrubý příjem ze vstupného z promítání Filmu(ů), po odečtení příslušných daní a dohodnutých propagačních nákladů.
+// ============================================================
+// ONE+: Payment – Monthly Installments
+// ============================================================
+function onePlusPaymentMonthly(d: ContractFormData): string {
+  return `IV.
+Odměna
 
-ČLÁNEK II – UDĚLENÍ LICENCE
+1. Klient je povinen zaplatit společnosti Krutart poplatek za poskytnutí licence podle této smlouvy v celkové výši ${or(d.feeAmount)} ${or(d.feeCurrency)} bez DPH za každých 12 měsíců dohodnuté doby trvání licence.
 
-2.1. Poskytovatel tímto uděluje Nabyvateli nevýhradní licenci k veřejnému promítání Filmu(ů) na Území po dobu Licenčního období.
+2. Roční licenční poplatek uvedený v předchozím odstavci bude uhrazen na bankovní účet společnosti Krutart uvedený v záhlaví této smlouvy ve 12 měsíčních splátkách, přičemž každá měsíční splátka bude činit ${or(d.monthlyAmount)} ${or(d.feeCurrency)} bez DPH, na základě příslušných daňových dokladů – faktur společnosti Krutart vystavených vždy v měsíci, ke kterému se příslušná splátka vztahuje. Každá taková faktura je splatná do 15 dnů od data vystavení.
 
-2.2. Nabyvatel může promítat Film(y) jak veřejnému, tak školnímu/vzdělávacímu publiku na Území.
+3. Společnost Krutart je oprávněna kdykoli během sjednané doby platnosti licence písemně (alespoň e-mailem) oznámit klientovi zvýšení ročního licenčního poplatku pro následující 12měsíční licenční období. Pokud klient s takovým zvýšením nesouhlasí, je oprávněn tuto smlouvu písemně (alespoň e-mailem) vypovědět do 30 dnů od obdržení takového oznámení od společnosti Krutart, s účinností ke konci aktuálního licenčního období. Pokud klient nezašle společnosti Krutart písemnou výpověď v souladu s předchozí větou, má se za to, že klient s takovým zvýšením ročního licenčního poplatku souhlasí; v takovém případě se tento licenční poplatek automaticky zvýší pro příslušné následující 12měsíční období (a také pro všechna pozdější 12měsíční období, pokud bude licence prodloužena v souladu s touto smlouvou) a podmínky této smlouvy budou odpovídajícím způsobem změněny (bez nutnosti přijmout písemný dodatek); pokud tato smlouva stanoví rozdělení ročního licenčního poplatku na splátky, všechny tyto splátky se proporcionálně zvýší tak, aby v součtu odpovídaly nové výši ročního licenčního poplatku.`;
+}
 
-2.3. Nabyvatel nesmí bez předchozího písemného souhlasu Poskytovatele udělovat podlicence, distribuovat, kopírovat ani zpřístupňovat Film(y) třetím stranám.
+// ============================================================
+// ONE+: Signatures + Annex 1 (Film catalogue) + Annex 2 (GTC)
+// ============================================================
+function onePlusClosing(d: ContractFormData): string {
+  const filmCatalogue = d.films
+    .map((f, i) => onePlusFilmCatalogueEntry(f, i, d.deliveryMethod))
+    .join("\n\n");
 
-2.4. Nabyvatel smí Film(y) používat výhradně pro fulldome projekci a nesmí Film(y) jakýmkoli způsobem konvertovat, upravovat ani modifikovat bez předchozího písemného souhlasu Poskytovatele.
+  return `
 
-ČLÁNEK III – PODÍL NA PŘÍJMECH A PLATBA
+Strany prohlašují, že porozuměly obsahu této smlouvy a souhlasí s ním, a to jak v celku, tak v jednotlivých ustanoveních, na důkaz čehož připojují své podpisy:
 
-3.1. Nabyvatel bude Poskytovateli platit následující podíl z Čistého příjmu:
-   - Školní/vzdělávací projekce: ${or(d.revenueShareSchool)}% z Čistého příjmu
-   - Veřejné projekce: ${or(d.revenueSharePublic)}% z Čistého příjmu
-
-3.2. Propagační náklady odečitatelné od hrubého příjmu: ${or(d.promotionalCosts)} ${or(d.feeCurrency)}
-
-${minGuaranteeClause}
-
-${revenueCapClause}
-
-3.5. Platby z podílu na příjmech budou prováděny čtvrtletně, do 30 dnů po skončení každého kalendářního čtvrtletí, spolu s podrobnou zprávou o všech projekcích, návštěvnosti a příjmech.
-
-3.6. Bankovní údaje:
-   Majitel účtu: Fulldome Film Society z.s.
-   Banka: Fio banka, a.s.
-   IBAN: CZ2120100000002902248837
-   SWIFT/BIC: FIOBCZPPXXX
-
-3.7. Veškeré platby budou provedeny bez jakýchkoli bankovních poplatků k tíži Poskytovatele.
-
-ČLÁNEK IV – DODÁNÍ
-
-4.1. Poskytovatel dodá Film(y) Nabyvateli prostřednictvím ${d.deliveryMethod === "FTP" ? "FTP odkazu ke stažení" : "externího HDD (zaslaného na náklady Nabyvatele)"} do 14 dnů od obdržení podepsané Smlouvy.
-
-4.2. Po dodání Nabyvatel potvrdí přijetí Filmu(ů) a ověří jejich technickou kvalitu do 7 dnů.
-
-ČLÁNEK V – PROPAGAČNÍ MATERIÁLY
-
-5.1. Poskytovatel poskytne Nabyvateli dostupné propagační materiály pro účely propagace promítání Filmu(ů) na Území.
-
-5.2. Nabyvatel se zavazuje uvádět Poskytovatele a původní producenty ve všech propagačních materiálech.
-
-ČLÁNEK VI – VÝKAZNICTVÍ A AUDIT
-
-6.1. Nabyvatel poskytne Poskytovateli čtvrtletní zprávy o promítání zahrnující počet projekcí, údaje o návštěvnosti a podrobný rozpis příjmů, do 30 dnů po skončení každého kalendářního čtvrtletí.
-
-6.2. Poskytovatel má právo provést audit záznamů Nabyvatele týkajících se promítání Filmu(ů) po přiměřeném oznámení, nejvýše jednou ročně.
-
-ČLÁNEK VII – UKONČENÍ
-
-7.1. Každá Strana může tuto Smlouvu vypovědět s 90denní písemnou výpovědní lhůtou.
-
-7.2. Poskytovatel může tuto Smlouvu okamžitě vypovědět při podstatném porušení ustanovení této Smlouvy Nabyvatelem, pokud toto porušení nenapraví do 30 dnů od písemného upozornění.
-
-7.3. Po ukončení Nabyvatel ukončí veškeré promítání, vyrovná veškeré dlužné platby z podílu na příjmech a smaže/zničí veškeré kopie Filmu(ů) do 30 dnů.
-
-ČLÁNEK VIII – ODPOVĚDNOST A ZÁRUKY
-
-8.1. Poskytovatel zaručuje, že má právo a oprávnění udělit licenci popsanou v této Smlouvě.
-
-8.2. Poskytovatel neodpovídá za žádné nepřímé, následné nebo nahodilé škody.
-
-ČLÁNEK IX – DŮVĚRNOST
-
-9.1. Obě Strany se zavazují zachovávat důvěrnost finančních podmínek této Smlouvy.
-
-ČLÁNEK X – ROZHODNÉ PRÁVO A ŘEŠENÍ SPORŮ
-
-10.1. Tato Smlouva se řídí právním řádem České republiky.
-
-10.2. Veškeré spory budou řešeny nejprve jednáním v dobré víře. Pokud nebudou vyřešeny do 30 dnů, budou předloženy příslušným soudům České republiky.
-
-ČLÁNEK XI – ZÁVĚREČNÁ USTANOVENÍ
-
-11.1. Tato Smlouva představuje úplnou dohodu mezi Stranami.
-
-11.2. Veškeré změny musí být provedeny písemně a podepsány oběma Stranami.
-
-11.3. Tato Smlouva je vyhotovena ve dvou stejnopisech.
-
-11.4. Tato Smlouva nabývá účinnosti podpisem obou Stran.
+Přílohy:
+− Příloha č. 1: Seznam filmů – Katalog filmů Krutart Fulldome
+− Příloha č. 2: Všeobecné obchodní podmínky
 
 
 V Praze dne ${formatDate(d.signingDatePrague)}
 
-_______________________________
-Fulldome Film Society z.s.
-Martin Juza, ředitel
+Krutart:
+
+___________________________
+Krutart s.r.o.
+MgA. Martin Jůza, jednatel
 
 
 V ${or(d.signingPlaceClient)} dne ${formatDate(d.signingDateClient)}
 
-_______________________________
+Klient:
+
+___________________________
 ${or(d.clientName)}
-${or(d.clientRepresentative)}`;
+${or(d.clientRepresentative)}
+
+
+Příloha č. 1
+k licenční smlouvě
+
+Seznam filmů – Katalog filmů Krutart Fulldome
+
+${filmCatalogue || "(Žádné filmy nebyly přidány)"}
+
+
+${onePlusGTC()}`;
 }
 
 // ============================================================
-// ONE+ – ANNUAL ONE-TIME (CZ)
+// ONE+: General Terms and Conditions (Annex 2)
+// ============================================================
+function onePlusGTC(): string {
+  return `Příloha č. 2
+k licenční smlouvě
+
+Všeobecné obchodní podmínky
+
+a) Obecné licenční podmínky
+
+1. Souhlas s použitím každého filmu poskytnutého na základě smlouvy zahrnuje následující typy souhlasů:
+   a. souhlas s užitím zvukově obrazového záznamu filmu;
+   b. souhlas s užitím filmu jako autorského díla jeho režiséra;
+   c. souhlas s užitím autorských děl a uměleckých výkonů použitých ve filmu
+   (všechny typy souhlasů podle tohoto ustanovení pro účely této smlouvy jsou dále společně označovány jako „licence").
+
+2. Klient je oprávněn používat snímky obrazovky nebo výňatky z každého filmu (v celkové délce nejvýše 2 minuty) k výrobě propagačních materiálů určených k oznámení použití filmu za podmínek stanovených v této smlouvě a používat tyto materiály v obvyklém rozsahu. Klient však bere na vědomí, že ani takové použití částí filmu nesmí mít vliv na uměleckou hodnotu filmu.
+
+3. Klient je povinen ve všech propagačních materiálech týkajících se konkrétního použití filmu podle smlouvy vhodným způsobem uvést, že Krutart je držitelem autorských práv k filmu, např. ve formě symbolu vyhrazených autorských práv nebo loga Krutart (například: © Krutart).
+
+4. Klient není oprávněn provádět žádné změny, úpravy, doplňky, spojení nebo jiné zásahy do filmů, pokud k tomu společnost Krutart neudělí výslovný písemný souhlas.
+
+5. Klient není oprávněn udělovat další sublicence ani jiným způsobem převádět práva z licence na třetí osoby.
+
+6. Po uplynutí sjednané doby platnosti licence je klient povinen neprodleně smazat všechny soubory obsahující filmy a doprovodné materiály; na žádost společnosti Krutart je klient povinen písemně potvrdit, že tuto povinnost splnil. Po uplynutí sjednané doby platnosti licence klient rovněž přestane filmy jakýmkoli způsobem užívat a odstraní je ze svého programu; v případě porušení této povinnosti klientem je společnost Krutart oprávněna v každém případě požadovat od klienta smluvní pokutu ve výši 2 ročních licenčních poplatků uvedených v článku IV. odstavci 1 této smlouvy.
+
+b) Překlad filmů
+
+7. Klient je oprávněn vytvořit dabovanou verzi nebo titulky ke každému filmu při používání licence podle smlouvy.
+
+8. Klient je povinen poskytnout každý takový překlad (tj. titulky a/nebo dabing) společnosti Krutart na vhodném médiu (potvrzeném společností Krutart) bez zbytečného odkladu po jeho vytvoření, nejpozději však do 1 měsíce od tohoto okamžiku.
+
+9. Pokud jde o výrobu titulků: Klient tímto bezplatně uděluje společnosti Krutart oprávnění k použití každého takového titulku v souvislosti s konkrétním filmem bez (územního, časového nebo jiného) omezení, ale vždy mimo planetárium (práva k použití titulků v planetáriu náleží výlučně klientovi); společnost Krutart je oprávněna tato práva sublicencovat třetím stranám.
+
+10. Pokud jde o výrobu dabingu: Klient je povinen dodržovat technické parametry týkající se dabingu a stanovené společností Krutart v protokolu, který bude klientovi za tímto účelem poskytnut společností Krutart. Klient je rovněž povinen poskytnout společnosti Krutart rozpočet na výrobu dabingu před zahájením výroby dabingu. Pokud po přijetí finálního dabingu od klienta (viz odstavec 8 výše) společnost Krutart potvrdí, že dabing splňuje stanovené technické parametry, je společnost Krutart oprávněna (nikoli však povinna) požádat klienta o udělení licence na tento dabing, která bude zahrnovat oprávnění k použití tohoto dabingu v souvislosti s konkrétním filmem bez (územních, časových nebo jiných) omezení, avšak vždy mimo planetárium (práva na použití dabingu v planetáriu zůstávají výlučně klientovi); společnost Krutart je oprávněna tato práva sublicencovat třetím stranám. Pokud je na žádost společnosti Krutart udělena licence na dabing v souladu s předchozí větou, zavazuje se společnost Krutart poskytnout klientovi slevu z licenčního poplatku uvedeného v článku IV smlouvy ve výši 1/2 dohodnutého rozpočtu na výrobu dabingu.
+
+11. Klient je v každém případě povinen vypořádat práva třetích osob k jednotlivým překladům (včetně práv hlasových umělců v případě dabingu, pokud bude licence k dabingu udělena, viz odstavec 10 výše) svým jménem, na své náklady a v rozsahu, který mu umožňuje udělit příslušnou licenci společnosti Krutart v souladu s výše uvedenými podmínkami.
+
+c) Sankce za opožděné platby
+
+12. V případě, že se klient zpozdí s platbou odměny podle této smlouvy o více než 14 dní, zavazuje se zaplatit společnosti Krutart úrok z prodlení ve výši 0,05 % za každý celý den prodlení.
+
+13. V případě, že se klient opozdí s platbou jakékoli části odměny o více než 30 dnů, je společnost Krutart oprávněna od smlouvy odstoupit s okamžitou účinností. V takovém případě zůstává společnosti Krutart zachováno právo na úroky z prodlení vzniklé do okamžiku odstoupení od této smlouvy. Pro vyloučení pochybností se sjednává, že odstoupení od smlouvy nebo zaplacení úroků z prodlení nemá vliv na právo společnosti Krutart na zaplacení původní dlužné částky.
+
+d) Různé
+
+14. Společnost Krutart poskytne přiměřenou technickou podporu pro přístup k filmům a jejich instalaci, nenese však žádnou odpovědnost za technická omezení na straně klienta (hardware, software, místní podmínky).
+
+15. Smlouva se řídí právními předpisy České republiky. Veškeré spory budou řešeny soudem s věcnou příslušností v České republice; územní příslušnost soudu se určí podle sídla společnosti Krutart.
+
+16. Obsah smlouvy je důvěrný, včetně všech finančních ujednání a dohodnutého rozsahu a podmínek licence.
+
+17. Změny smlouvy musí být provedeny písemnou formou (což pro účely tohoto ustanovení nezahrnuje elektronickou komunikaci) a podpisy zástupců obou stran musí být na stejném dokumentu.
+
+18. Odpověď strany podle § 1740 odst. 3 občanského zákoníku obsahující změnu nebo odchylku nepředstavuje přijetí nabídky k uzavření smlouvy, i když se podmínky nabídky podstatně nemění.`;
+}
+
+// ============================================================
+// ONE+: Combined generators
 // ============================================================
 function onePlusAnnual(d: ContractFormData): string {
-  const filmsList = d.films.map((f, i) => filmTechBlock(f, i)).join("\n\n");
-
-  return `SMLOUVA O PŘEDPLATNÉM ONE+ FULLDOME PROGRAMU
-
-uzavřená mezi:
-
-Fulldome Film Society z.s. (dále jen „Poskytovatel")
-Sídlo: Vyšehradská 320/49, Nusle, 128 00 Praha 2, Česká republika
-IČO: 06476317
-Zastoupen: Martin Juza, ředitel
-
-a
-
-${or(d.clientName)} (dále jen „Předplatitel")
-Sídlo: ${or(d.clientAddress)}
-IČO: ${or(d.clientBusinessId)}
-DIČ: ${or(d.clientTaxId)}
-Zapsán v: ${or(d.clientRegisterCourt)}, oddíl ${or(d.clientRegisterSection)}, vložka ${or(d.clientRegisterEntry)}
-Zastoupen: ${or(d.clientRepresentative)}
-
-(dále jednotlivě jako „Strana" nebo společně jako „Strany")
-
-PREAMBULE:
-
-Poskytovatel provozuje program One+ Fulldome, který nabízí přihlášeným planetáriím a fulldome kinům přístup ke kurátorskému katalogu fulldome filmů v rámci předplatného.
-
-Předplatitel provozuje fulldome kino/planetárium a přeje si přihlásit se k programu One+ pro přístup ke katalogu filmů.
-
-Strany se dohodly na následujících podmínkách:
-
-ČLÁNEK I – DEFINICE
-
-1.1. „Program One+" znamená předplatitelskou službu fulldome filmů Poskytovatele, která poskytuje přístup ke katalogu fulldome produkcí.
-
-1.2. „Katalog" znamená aktuální sbírku fulldome filmů dostupných v rámci programu One+, kterou může Poskytovatel průběžně aktualizovat. Aktuální katalog zahrnuje:
-${filmsList}
-
-1.3. „Území" znamená: ${or(d.territory)}
-
-1.4. „Období předplatného" znamená: ${d.licenseUnlimited ? "Neomezené (trvalé)" : `od ${formatDate(d.licenseFrom)} do ${formatDate(d.licenseTo)}`}
-
-ČLÁNEK II – PŘEDPLATNÉ A LICENCE
-
-2.1. Poskytovatel tímto uděluje Předplatiteli nevýhradní licenci k veřejnému promítání filmů z Katalogu na Území po dobu Období předplatného.
-
-2.2. Předplatitel může promítat filmy jak veřejnému, tak školnímu/vzdělávacímu publiku na Území.
-
-2.3. S aktualizací Katalogu získá Předplatitel přístup k nově přidaným filmům bez dodatečných nákladů během aktivního Období předplatného.
-
-2.4. Předplatitel nesmí bez předchozího písemného souhlasu Poskytovatele udělovat podlicence, distribuovat, kopírovat ani zpřístupňovat filmy třetím stranám.
-
-2.5. Předplatitel smí filmy používat výhradně pro fulldome projekci a nesmí filmy konvertovat, upravovat ani modifikovat bez předchozího písemného souhlasu Poskytovatele.
-
-ČLÁNEK III – POPLATEK ZA PŘEDPLATNÉ A PLATBA
-
-3.1. Roční poplatek za předplatné činí: ${or(d.feeAmount)} ${or(d.feeCurrency)}.
-
-3.2. Poplatek za předplatné bude hrazen ročně předem, do 30 dnů od začátku každého roku předplatného.
-
-3.3. Bankovní údaje:
-   Majitel účtu: Fulldome Film Society z.s.
-   Banka: Fio banka, a.s.
-   IBAN: CZ2120100000002902248837
-   SWIFT/BIC: FIOBCZPPXXX
-
-3.4. Veškeré platby budou provedeny bez jakýchkoli bankovních poplatků k tíži Poskytovatele.
-
-ČLÁNEK IV – DODÁNÍ
-
-4.1. Poskytovatel dodá filmy Předplatiteli prostřednictvím ${d.deliveryMethod === "FTP" ? "FTP odkazu ke stažení" : "externího HDD (zaslaného na náklady Předplatitele)"}.
-
-4.2. Nové filmy přidané do Katalogu budou Předplatiteli zpřístupněny v přiměřené lhůtě po jejich přidání.
-
-4.3. Po dodání Předplatitel potvrdí přijetí a ověří technickou kvalitu do 7 dnů.
-
-ČLÁNEK V – PROPAGAČNÍ MATERIÁLY
-
-5.1. Poskytovatel poskytne Předplatiteli dostupné propagační materiály ke každému filmu v Katalogu.
-
-5.2. Předplatitel se zavazuje uvádět Poskytovatele a původní producenty ve všech propagačních materiálech.
-
-ČLÁNEK VI – VÝKAZNICTVÍ
-
-6.1. Předplatitel poskytne Poskytovateli roční zprávy o promítání zahrnující počet projekcí a údaje o návštěvnosti za každý film, nejpozději do 31. ledna každého kalendářního roku za předcházející rok.
-
-ČLÁNEK VII – OBNOVENÍ A UKONČENÍ
-
-7.1. Předplatné se automaticky obnovuje na následující jednoleté období, pokud některá ze Stran neposkytne písemné oznámení o neobnovení alespoň 90 dnů před koncem aktuálního Období předplatného.
-
-7.2. Každá Strana může tuto Smlouvu vypovědět s 90denní písemnou výpovědní lhůtou.
-
-7.3. Poskytovatel může tuto Smlouvu okamžitě vypovědět při podstatném porušení ustanovení této Smlouvy Předplatitelem.
-
-7.4. Po ukončení nebo neobnovení Předplatitel ukončí veškeré promítání a smaže/zničí veškeré kopie filmů do 30 dnů, přičemž toto smazání písemně potvrdí.
-
-ČLÁNEK VIII – ODPOVĚDNOST A ZÁRUKY
-
-8.1. Poskytovatel zaručuje, že má právo a oprávnění udělit licence popsané v této Smlouvě.
-
-8.2. Poskytovatel neodpovídá za žádné nepřímé, následné nebo nahodilé škody.
-
-ČLÁNEK IX – DŮVĚRNOST
-
-9.1. Obě Strany se zavazují zachovávat důvěrnost finančních podmínek této Smlouvy.
-
-ČLÁNEK X – ROZHODNÉ PRÁVO A ŘEŠENÍ SPORŮ
-
-10.1. Tato Smlouva se řídí právním řádem České republiky.
-
-10.2. Veškeré spory budou řešeny nejprve jednáním v dobré víře. Pokud nebudou vyřešeny do 30 dnů, budou předloženy příslušným soudům České republiky.
-
-ČLÁNEK XI – ZÁVĚREČNÁ USTANOVENÍ
-
-11.1. Tato Smlouva představuje úplnou dohodu mezi Stranami.
-
-11.2. Veškeré změny musí být provedeny písemně a podepsány oběma Stranami.
-
-11.3. Tato Smlouva je vyhotovena ve dvou stejnopisech.
-
-11.4. Tato Smlouva nabývá účinnosti podpisem obou Stran.
-
-
-V Praze dne ${formatDate(d.signingDatePrague)}
-
-_______________________________
-Fulldome Film Society z.s.
-Martin Juza, ředitel
-
-
-V ${or(d.signingPlaceClient)} dne ${formatDate(d.signingDateClient)}
-
-_______________________________
-${or(d.clientName)}
-${or(d.clientRepresentative)}`;
+  return (
+    onePlusBase(d) +
+    "\n\n" +
+    onePlusPaymentAnnual(d) +
+    onePlusClosing(d)
+  );
 }
 
-// ============================================================
-// ONE+ – MONTHLY INSTALLMENTS (CZ)
-// ============================================================
-function onePlusMonthly(d: ContractFormData): string {
-  const base = onePlusAnnual(d);
-
-  const monthlyPayment = `3.1. Roční poplatek za předplatné činí: ${or(d.feeAmount)} ${or(d.feeCurrency)}, splatný v měsíčních splátkách po ${or(d.monthlyAmount)} ${or(d.feeCurrency)}.
-
-3.2. Měsíční splátky budou Předplatitelem hrazeny do 15. dne každého kalendářního měsíce.`;
-
-  return base.replace(
-    /3\.1\. Roční poplatek za předplatné činí:.*?\n\n3\.2\. Poplatek za předplatné bude hrazen.*?roku předplatného\./s,
-    monthlyPayment
+function onePlusMonthlyFn(d: ContractFormData): string {
+  return (
+    onePlusBase(d) +
+    "\n\n" +
+    onePlusPaymentMonthly(d) +
+    onePlusClosing(d)
   );
 }
 
@@ -514,7 +561,7 @@ export function generateContractText(data: ContractFormData): string {
       case "ANNUAL_ONETIME":
         return onePlusAnnual(data);
       case "MONTHLY_INSTALLMENTS":
-        return onePlusMonthly(data);
+        return onePlusMonthlyFn(data);
       default:
         return onePlusAnnual(data);
     }

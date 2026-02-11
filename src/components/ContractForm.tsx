@@ -313,15 +313,6 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
               className={inputClass}
             />
           </Field>
-          <Field label="Register Court">
-            <input
-              type="text"
-              value={data.clientRegisterCourt}
-              onChange={(e) => update("clientRegisterCourt", e.target.value)}
-              className={inputClass}
-              placeholder="e.g. Municipal Court in Prague"
-            />
-          </Field>
           <Field label="Register Section">
             <input
               type="text"
