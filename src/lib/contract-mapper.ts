@@ -67,6 +67,7 @@ export function dbToFormData(contract: ContractWithFilms): ContractFormData {
     signingPlaceClient: contract.signingPlaceClient ?? "",
     films,
     pdfGenerated: contract.pdfGenerated,
+    pipedriveId: contract.pipedriveId ?? undefined,
   };
 }
 

@@ -112,6 +112,9 @@ export interface ContractFormData {
 
   // PDF
   pdfGenerated: boolean;
+
+  // Pipedrive
+  pipedriveId?: string;
 }
 
 export function getDefaultFormData(type: ContractType = "SINGLE_LICENCE"): ContractFormData {

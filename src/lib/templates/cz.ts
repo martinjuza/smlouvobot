@@ -138,7 +138,9 @@ Licence
 
 2. Za účelem řádného využití licence podle této smlouvy je společnost Krutart povinna poskytnout klientovi následující materiály a klient je oprávněn je používat v souvislosti s využíváním filmu za výše uvedených licenčních podmínek:
 
-${filmTechBlocks}`;
+${filmTechBlocks}
+
+3. Způsob dodání: ${d.deliveryMethod === "FTP" ? "Kopie filmu a veškeré doprovodné materiály budou dodány elektronicky – společnost Krutart poskytne klientovi přístup ke svému FTP serveru pro bezplatné stažení." : "Kopie filmu a veškeré doprovodné materiály budou dodány na fyzickém pevném disku (HDD) za dodatečný manipulační poplatek ve výši 300 $."}`;
 }
 
 // ============================================================
@@ -385,7 +387,9 @@ Licence
    − v následujícím rozsahu (počet promítání): bez omezení;
    − nevýhradně, tj. společnost Krutart není omezena v možnosti sama filmy užívat nebo umožnit jejich užití jiným osobám za výše uvedených podmínek.
 
-2. Za účelem řádného využití licence podle této smlouvy je společnost Krutart povinna poskytnout klientovi kopie filmů a doprovodných materiálů podle podmínek uvedených v příloze č. 1 a klient je oprávněn je používat v souvislosti s využíváním filmů za výše uvedených licenčních podmínek. V případě filmů nově vyrobených společností Krutart během dohodnuté licenční doby (viz článek II odst. 1 této smlouvy) dohodnou strany podmínky dodání kopií těchto filmů a doprovodných materiálů prostřednictvím e-mailu.`;
+2. Za účelem řádného využití licence podle této smlouvy je společnost Krutart povinna poskytnout klientovi kopie filmů a doprovodných materiálů podle podmínek uvedených v příloze č. 1 a klient je oprávněn je používat v souvislosti s využíváním filmů za výše uvedených licenčních podmínek. V případě filmů nově vyrobených společností Krutart během dohodnuté licenční doby (viz článek II odst. 1 této smlouvy) dohodnou strany podmínky dodání kopií těchto filmů a doprovodných materiálů prostřednictvím e-mailu.
+
+3. Způsob dodání: ${d.deliveryMethod === "FTP" ? "Kopie filmů a veškeré doprovodné materiály budou dodány elektronicky – společnost Krutart poskytne klientovi přístup ke svému FTP serveru pro bezplatné stažení." : "Kopie filmů a veškeré doprovodné materiály budou dodány na fyzickém pevném disku (HDD) za dodatečný manipulační poplatek ve výši 300 $."}`;
 }
 
 // ============================================================

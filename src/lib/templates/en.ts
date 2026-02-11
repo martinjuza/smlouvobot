@@ -140,7 +140,9 @@ Licence
 
 2. For the purpose of proper use of the licence under this agreement, Krutart shall provide the client with the following materials and the client is entitled to use them in connection with the use of the film under the above licence conditions:
 
-${filmTechBlocks}`;
+${filmTechBlocks}
+
+3. Method of delivery: ${d.deliveryMethod === "FTP" ? "The film copies and all accompanying materials shall be delivered electronically – Krutart shall provide the client with access to its FTP server for download free of charge." : "The film copies and all accompanying materials shall be delivered on a physical hard drive (HDD) for an additional handling fee of USD 300."}`;
 }
 
 // ============================================================
@@ -387,7 +389,9 @@ Licence
    − to the following extent (number of screenings): unlimited;
    − non-exclusively, i.e. Krutart is not restricted in its ability to use the films itself or to allow their use by other persons under the above conditions.
 
-2. For the purpose of proper use of the licence under this agreement, Krutart shall provide the client with copies of the films and accompanying materials according to the conditions set out in Annex No. 1 and the client is entitled to use them in connection with the use of the films under the above licence conditions. In the case of films newly produced by Krutart during the agreed licence period (see Article II paragraph 1 of this agreement), the parties shall agree on the terms of delivery of copies of these films and accompanying materials via e-mail.`;
+2. For the purpose of proper use of the licence under this agreement, Krutart shall provide the client with copies of the films and accompanying materials according to the conditions set out in Annex No. 1 and the client is entitled to use them in connection with the use of the films under the above licence conditions. In the case of films newly produced by Krutart during the agreed licence period (see Article II paragraph 1 of this agreement), the parties shall agree on the terms of delivery of copies of these films and accompanying materials via e-mail.
+
+3. Method of delivery: ${d.deliveryMethod === "FTP" ? "The film copies and all accompanying materials shall be delivered electronically – Krutart shall provide the client with access to its FTP server for download free of charge." : "The film copies and all accompanying materials shall be delivered on a physical hard drive (HDD) for an additional handling fee of USD 300."}`;
 }
 
 // ============================================================

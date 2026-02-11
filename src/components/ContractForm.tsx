@@ -73,12 +73,20 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
   const [previewText, setPreviewText] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [films, setFilms] = useState<FilmOption[]>([]);
+  const [pushing, setPushing] = useState(false);
+  const [pushResult, setPushResult] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadFilms = () => {
     fetch("/api/films")
       .then((r) => r.json())
       .then(setFilms)
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    loadFilms();
   }, []);
 
   const update = useCallback(
@@ -116,6 +124,48 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
     const text = await res.text();
     setPreviewText(text);
     setShowPreview(true);
+  };
+
+  const syncFilms = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/films/sync", { method: "POST" });
+      const json = await res.json();
+      if (json.ok) {
+        setSyncResult(`Synced: ${json.created} new, ${json.updated} updated`);
+        loadFilms();
+      } else {
+        setSyncResult(`Error: ${json.error}`);
+      }
+    } catch {
+      setSyncResult("Sync failed");
+    }
+    setSyncing(false);
+    setTimeout(() => setSyncResult(null), 4000);
+  };
+
+  const pushToPipedrive = async () => {
+    setPushing(true);
+    setPushResult(null);
+    await save();
+    try {
+      const res = await fetch("/api/pipedrive/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractId }),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setPushResult(`Pushed ${json.fieldsPushed.length} fields to deal #${json.dealId}`);
+      } else {
+        setPushResult(`Error: ${json.error}`);
+      }
+    } catch {
+      setPushResult("Push failed");
+    }
+    setPushing(false);
+    setTimeout(() => setPushResult(null), 4000);
   };
 
   // Film management
@@ -313,23 +363,6 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
               className={inputClass}
             />
           </Field>
-          <Field label="Register Section">
-            <input
-              type="text"
-              value={data.clientRegisterSection}
-              onChange={(e) => update("clientRegisterSection", e.target.value)}
-              className={inputClass}
-              placeholder="e.g. C"
-            />
-          </Field>
-          <Field label="Register Entry">
-            <input
-              type="text"
-              value={data.clientRegisterEntry}
-              onChange={(e) => update("clientRegisterEntry", e.target.value)}
-              className={inputClass}
-            />
-          </Field>
           <Field label="Representative">
             <input
               type="text"
@@ -448,7 +481,7 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
           </div>
         ))}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
           <button
             onClick={addFilm}
             className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
@@ -467,7 +500,7 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
                 defaultValue=""
               >
                 <option value="" disabled>
-                  + Add from Catalogue
+                  + Add from Catalogue ({films.length} films)
                 </option>
                 {films.map((f) => (
                   <option key={f.id} value={f.id}>
@@ -476,6 +509,16 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
                 ))}
               </select>
             </div>
+          )}
+          <button
+            onClick={syncFilms}
+            disabled={syncing}
+            className="px-3 py-2 text-sm border border-green-300 text-green-700 rounded-md hover:bg-green-50 disabled:opacity-50"
+          >
+            {syncing ? "Syncing..." : "Sync from Google Sheet"}
+          </button>
+          {syncResult && (
+            <span className="text-xs text-gray-600">{syncResult}</span>
           )}
         </div>
       </Section>
@@ -764,6 +807,27 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
           </Field>
         </div>
       </Section>
+
+      {/* Pipedrive */}
+      {data.pipedriveId && (
+        <Section title="Pipedrive">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              Linked to deal #{data.pipedriveId}
+            </span>
+            <button
+              onClick={pushToPipedrive}
+              disabled={pushing}
+              className="px-3 py-2 text-sm border border-purple-300 text-purple-700 rounded-md hover:bg-purple-50 disabled:opacity-50"
+            >
+              {pushing ? "Pushing..." : "Push to Pipedrive"}
+            </button>
+            {pushResult && (
+              <span className="text-xs text-gray-600">{pushResult}</span>
+            )}
+          </div>
+        </Section>
+      )}
 
       {/* Bottom Save */}
       <div className="flex justify-end gap-2 mb-12">
