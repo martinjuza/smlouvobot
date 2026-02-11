@@ -48,10 +48,13 @@ export type FilmMinAggregateOutputType = {
   originalLanguage: string | null
   availableLanguages: string | null
   availableDubs: string | null
+  availableResolutions: string | null
+  availableSoundmixes: string | null
   hasTrailerFlat: boolean | null
   hasTrailerDome: boolean | null
   hasPromoMaterials: boolean | null
   googleSheetRow: number | null
+  sheetData: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,10 +73,13 @@ export type FilmMaxAggregateOutputType = {
   originalLanguage: string | null
   availableLanguages: string | null
   availableDubs: string | null
+  availableResolutions: string | null
+  availableSoundmixes: string | null
   hasTrailerFlat: boolean | null
   hasTrailerDome: boolean | null
   hasPromoMaterials: boolean | null
   googleSheetRow: number | null
+  sheetData: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -92,10 +98,13 @@ export type FilmCountAggregateOutputType = {
   originalLanguage: number
   availableLanguages: number
   availableDubs: number
+  availableResolutions: number
+  availableSoundmixes: number
   hasTrailerFlat: number
   hasTrailerDome: number
   hasPromoMaterials: number
   googleSheetRow: number
+  sheetData: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -124,10 +133,13 @@ export type FilmMinAggregateInputType = {
   originalLanguage?: true
   availableLanguages?: true
   availableDubs?: true
+  availableResolutions?: true
+  availableSoundmixes?: true
   hasTrailerFlat?: true
   hasTrailerDome?: true
   hasPromoMaterials?: true
   googleSheetRow?: true
+  sheetData?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -146,10 +158,13 @@ export type FilmMaxAggregateInputType = {
   originalLanguage?: true
   availableLanguages?: true
   availableDubs?: true
+  availableResolutions?: true
+  availableSoundmixes?: true
   hasTrailerFlat?: true
   hasTrailerDome?: true
   hasPromoMaterials?: true
   googleSheetRow?: true
+  sheetData?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -168,10 +183,13 @@ export type FilmCountAggregateInputType = {
   originalLanguage?: true
   availableLanguages?: true
   availableDubs?: true
+  availableResolutions?: true
+  availableSoundmixes?: true
   hasTrailerFlat?: true
   hasTrailerDome?: true
   hasPromoMaterials?: true
   googleSheetRow?: true
+  sheetData?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -277,10 +295,13 @@ export type FilmGroupByOutputType = {
   originalLanguage: string
   availableLanguages: string | null
   availableDubs: string | null
+  availableResolutions: string | null
+  availableSoundmixes: string | null
   hasTrailerFlat: boolean
   hasTrailerDome: boolean
   hasPromoMaterials: boolean
   googleSheetRow: number | null
+  sheetData: string | null
   createdAt: Date
   updatedAt: Date
   _count: FilmCountAggregateOutputType | null
@@ -322,10 +343,13 @@ export type FilmWhereInput = {
   originalLanguage?: Prisma.StringFilter<"Film"> | string
   availableLanguages?: Prisma.StringNullableFilter<"Film"> | string | null
   availableDubs?: Prisma.StringNullableFilter<"Film"> | string | null
+  availableResolutions?: Prisma.StringNullableFilter<"Film"> | string | null
+  availableSoundmixes?: Prisma.StringNullableFilter<"Film"> | string | null
   hasTrailerFlat?: Prisma.BoolFilter<"Film"> | boolean
   hasTrailerDome?: Prisma.BoolFilter<"Film"> | boolean
   hasPromoMaterials?: Prisma.BoolFilter<"Film"> | boolean
   googleSheetRow?: Prisma.IntNullableFilter<"Film"> | number | null
+  sheetData?: Prisma.StringNullableFilter<"Film"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Film"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Film"> | Date | string
 }
@@ -344,10 +368,13 @@ export type FilmOrderByWithRelationInput = {
   originalLanguage?: Prisma.SortOrder
   availableLanguages?: Prisma.SortOrderInput | Prisma.SortOrder
   availableDubs?: Prisma.SortOrderInput | Prisma.SortOrder
+  availableResolutions?: Prisma.SortOrderInput | Prisma.SortOrder
+  availableSoundmixes?: Prisma.SortOrderInput | Prisma.SortOrder
   hasTrailerFlat?: Prisma.SortOrder
   hasTrailerDome?: Prisma.SortOrder
   hasPromoMaterials?: Prisma.SortOrder
   googleSheetRow?: Prisma.SortOrderInput | Prisma.SortOrder
+  sheetData?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -369,10 +396,13 @@ export type FilmWhereUniqueInput = Prisma.AtLeast<{
   originalLanguage?: Prisma.StringFilter<"Film"> | string
   availableLanguages?: Prisma.StringNullableFilter<"Film"> | string | null
   availableDubs?: Prisma.StringNullableFilter<"Film"> | string | null
+  availableResolutions?: Prisma.StringNullableFilter<"Film"> | string | null
+  availableSoundmixes?: Prisma.StringNullableFilter<"Film"> | string | null
   hasTrailerFlat?: Prisma.BoolFilter<"Film"> | boolean
   hasTrailerDome?: Prisma.BoolFilter<"Film"> | boolean
   hasPromoMaterials?: Prisma.BoolFilter<"Film"> | boolean
   googleSheetRow?: Prisma.IntNullableFilter<"Film"> | number | null
+  sheetData?: Prisma.StringNullableFilter<"Film"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Film"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Film"> | Date | string
 }, "id">
@@ -391,10 +421,13 @@ export type FilmOrderByWithAggregationInput = {
   originalLanguage?: Prisma.SortOrder
   availableLanguages?: Prisma.SortOrderInput | Prisma.SortOrder
   availableDubs?: Prisma.SortOrderInput | Prisma.SortOrder
+  availableResolutions?: Prisma.SortOrderInput | Prisma.SortOrder
+  availableSoundmixes?: Prisma.SortOrderInput | Prisma.SortOrder
   hasTrailerFlat?: Prisma.SortOrder
   hasTrailerDome?: Prisma.SortOrder
   hasPromoMaterials?: Prisma.SortOrder
   googleSheetRow?: Prisma.SortOrderInput | Prisma.SortOrder
+  sheetData?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FilmCountOrderByAggregateInput
@@ -421,10 +454,13 @@ export type FilmScalarWhereWithAggregatesInput = {
   originalLanguage?: Prisma.StringWithAggregatesFilter<"Film"> | string
   availableLanguages?: Prisma.StringNullableWithAggregatesFilter<"Film"> | string | null
   availableDubs?: Prisma.StringNullableWithAggregatesFilter<"Film"> | string | null
+  availableResolutions?: Prisma.StringNullableWithAggregatesFilter<"Film"> | string | null
+  availableSoundmixes?: Prisma.StringNullableWithAggregatesFilter<"Film"> | string | null
   hasTrailerFlat?: Prisma.BoolWithAggregatesFilter<"Film"> | boolean
   hasTrailerDome?: Prisma.BoolWithAggregatesFilter<"Film"> | boolean
   hasPromoMaterials?: Prisma.BoolWithAggregatesFilter<"Film"> | boolean
   googleSheetRow?: Prisma.IntNullableWithAggregatesFilter<"Film"> | number | null
+  sheetData?: Prisma.StringNullableWithAggregatesFilter<"Film"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Film"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Film"> | Date | string
 }
@@ -443,10 +479,13 @@ export type FilmCreateInput = {
   originalLanguage?: string
   availableLanguages?: string | null
   availableDubs?: string | null
+  availableResolutions?: string | null
+  availableSoundmixes?: string | null
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: number | null
+  sheetData?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -465,10 +504,13 @@ export type FilmUncheckedCreateInput = {
   originalLanguage?: string
   availableLanguages?: string | null
   availableDubs?: string | null
+  availableResolutions?: string | null
+  availableSoundmixes?: string | null
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: number | null
+  sheetData?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -487,10 +529,13 @@ export type FilmUpdateInput = {
   originalLanguage?: Prisma.StringFieldUpdateOperationsInput | string
   availableLanguages?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   availableDubs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableResolutions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableSoundmixes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hasTrailerFlat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasTrailerDome?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasPromoMaterials?: Prisma.BoolFieldUpdateOperationsInput | boolean
   googleSheetRow?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sheetData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -509,10 +554,13 @@ export type FilmUncheckedUpdateInput = {
   originalLanguage?: Prisma.StringFieldUpdateOperationsInput | string
   availableLanguages?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   availableDubs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableResolutions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableSoundmixes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hasTrailerFlat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasTrailerDome?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasPromoMaterials?: Prisma.BoolFieldUpdateOperationsInput | boolean
   googleSheetRow?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sheetData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -531,10 +579,13 @@ export type FilmCreateManyInput = {
   originalLanguage?: string
   availableLanguages?: string | null
   availableDubs?: string | null
+  availableResolutions?: string | null
+  availableSoundmixes?: string | null
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: number | null
+  sheetData?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -553,10 +604,13 @@ export type FilmUpdateManyMutationInput = {
   originalLanguage?: Prisma.StringFieldUpdateOperationsInput | string
   availableLanguages?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   availableDubs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableResolutions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableSoundmixes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hasTrailerFlat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasTrailerDome?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasPromoMaterials?: Prisma.BoolFieldUpdateOperationsInput | boolean
   googleSheetRow?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sheetData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -575,10 +629,13 @@ export type FilmUncheckedUpdateManyInput = {
   originalLanguage?: Prisma.StringFieldUpdateOperationsInput | string
   availableLanguages?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   availableDubs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableResolutions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availableSoundmixes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hasTrailerFlat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasTrailerDome?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasPromoMaterials?: Prisma.BoolFieldUpdateOperationsInput | boolean
   googleSheetRow?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sheetData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -597,10 +654,13 @@ export type FilmCountOrderByAggregateInput = {
   originalLanguage?: Prisma.SortOrder
   availableLanguages?: Prisma.SortOrder
   availableDubs?: Prisma.SortOrder
+  availableResolutions?: Prisma.SortOrder
+  availableSoundmixes?: Prisma.SortOrder
   hasTrailerFlat?: Prisma.SortOrder
   hasTrailerDome?: Prisma.SortOrder
   hasPromoMaterials?: Prisma.SortOrder
   googleSheetRow?: Prisma.SortOrder
+  sheetData?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -623,10 +683,13 @@ export type FilmMaxOrderByAggregateInput = {
   originalLanguage?: Prisma.SortOrder
   availableLanguages?: Prisma.SortOrder
   availableDubs?: Prisma.SortOrder
+  availableResolutions?: Prisma.SortOrder
+  availableSoundmixes?: Prisma.SortOrder
   hasTrailerFlat?: Prisma.SortOrder
   hasTrailerDome?: Prisma.SortOrder
   hasPromoMaterials?: Prisma.SortOrder
   googleSheetRow?: Prisma.SortOrder
+  sheetData?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -645,10 +708,13 @@ export type FilmMinOrderByAggregateInput = {
   originalLanguage?: Prisma.SortOrder
   availableLanguages?: Prisma.SortOrder
   availableDubs?: Prisma.SortOrder
+  availableResolutions?: Prisma.SortOrder
+  availableSoundmixes?: Prisma.SortOrder
   hasTrailerFlat?: Prisma.SortOrder
   hasTrailerDome?: Prisma.SortOrder
   hasPromoMaterials?: Prisma.SortOrder
   googleSheetRow?: Prisma.SortOrder
+  sheetData?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -681,10 +747,13 @@ export type FilmSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   originalLanguage?: boolean
   availableLanguages?: boolean
   availableDubs?: boolean
+  availableResolutions?: boolean
+  availableSoundmixes?: boolean
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: boolean
+  sheetData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["film"]>
@@ -703,10 +772,13 @@ export type FilmSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   originalLanguage?: boolean
   availableLanguages?: boolean
   availableDubs?: boolean
+  availableResolutions?: boolean
+  availableSoundmixes?: boolean
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: boolean
+  sheetData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["film"]>
@@ -725,10 +797,13 @@ export type FilmSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   originalLanguage?: boolean
   availableLanguages?: boolean
   availableDubs?: boolean
+  availableResolutions?: boolean
+  availableSoundmixes?: boolean
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: boolean
+  sheetData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["film"]>
@@ -747,15 +822,18 @@ export type FilmSelectScalar = {
   originalLanguage?: boolean
   availableLanguages?: boolean
   availableDubs?: boolean
+  availableResolutions?: boolean
+  availableSoundmixes?: boolean
   hasTrailerFlat?: boolean
   hasTrailerDome?: boolean
   hasPromoMaterials?: boolean
   googleSheetRow?: boolean
+  sheetData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FilmOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleCz" | "directors" | "yearOfProduction" | "resolution" | "domemasterFormat" | "soundmix" | "meVersionOfSound" | "runtime" | "originalLanguage" | "availableLanguages" | "availableDubs" | "hasTrailerFlat" | "hasTrailerDome" | "hasPromoMaterials" | "googleSheetRow" | "createdAt" | "updatedAt", ExtArgs["result"]["film"]>
+export type FilmOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleCz" | "directors" | "yearOfProduction" | "resolution" | "domemasterFormat" | "soundmix" | "meVersionOfSound" | "runtime" | "originalLanguage" | "availableLanguages" | "availableDubs" | "availableResolutions" | "availableSoundmixes" | "hasTrailerFlat" | "hasTrailerDome" | "hasPromoMaterials" | "googleSheetRow" | "sheetData" | "createdAt" | "updatedAt", ExtArgs["result"]["film"]>
 
 export type $FilmPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Film"
@@ -774,10 +852,13 @@ export type $FilmPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     originalLanguage: string
     availableLanguages: string | null
     availableDubs: string | null
+    availableResolutions: string | null
+    availableSoundmixes: string | null
     hasTrailerFlat: boolean
     hasTrailerDome: boolean
     hasPromoMaterials: boolean
     googleSheetRow: number | null
+    sheetData: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["film"]>
@@ -1216,10 +1297,13 @@ export interface FilmFieldRefs {
   readonly originalLanguage: Prisma.FieldRef<"Film", 'String'>
   readonly availableLanguages: Prisma.FieldRef<"Film", 'String'>
   readonly availableDubs: Prisma.FieldRef<"Film", 'String'>
+  readonly availableResolutions: Prisma.FieldRef<"Film", 'String'>
+  readonly availableSoundmixes: Prisma.FieldRef<"Film", 'String'>
   readonly hasTrailerFlat: Prisma.FieldRef<"Film", 'Boolean'>
   readonly hasTrailerDome: Prisma.FieldRef<"Film", 'Boolean'>
   readonly hasPromoMaterials: Prisma.FieldRef<"Film", 'Boolean'>
   readonly googleSheetRow: Prisma.FieldRef<"Film", 'Int'>
+  readonly sheetData: Prisma.FieldRef<"Film", 'String'>
   readonly createdAt: Prisma.FieldRef<"Film", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Film", 'DateTime'>
 }
