@@ -134,10 +134,13 @@ model Film {
   originalLanguage String @default("EN")
   availableLanguages String? // JSON array
   availableDubs    String? // JSON array
+  availableResolutions String? // JSON array, e.g. ["2K","4K","8K"]
+  availableSoundmixes  String? // JSON array, e.g. ["5.1","Stereo"]
   hasTrailerFlat   Boolean @default(true)
   hasTrailerDome   Boolean @default(true)
   hasPromoMaterials Boolean @default(true)
   googleSheetRow   Int?
+  sheetData        String? // Full raw row from Google Sheet as JSON
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

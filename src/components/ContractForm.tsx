@@ -26,6 +26,8 @@ interface FilmOption {
   originalLanguage: string;
   availableLanguages?: string;
   availableDubs?: string;
+  availableResolutions?: string;
+  availableSoundmixes?: string;
 }
 
 interface ContractFormProps {
@@ -194,8 +196,22 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
       runtime: filmOpt.runtime,
       language: filmOpt.originalLanguage,
       availableLanguages: filmOpt.availableLanguages || undefined,
+      availableDubs: filmOpt.availableDubs || undefined,
+      availableResolutions: filmOpt.availableResolutions || undefined,
+      availableSoundmixes: filmOpt.availableSoundmixes || undefined,
     };
     update("films", [...data.films, newFilm]);
+  };
+
+  /** Parse a JSON array string into string[], returns empty if not valid */
+  const parseJsonArray = (val?: string): string[] => {
+    if (!val) return [];
+    try {
+      const arr = JSON.parse(val);
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
   };
 
   const updateFilm = (index: number, key: keyof ContractFilmData, value: string | boolean) => {
@@ -422,15 +438,30 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
                 />
               </Field>
               <Field label="Resolution" className="!mb-2">
-                <select
-                  value={film.resolution}
-                  onChange={(e) => updateFilm(i, "resolution", e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="2K">2K</option>
-                  <option value="4K">4K</option>
-                  <option value="8K">8K</option>
-                </select>
+                {(() => {
+                  const opts = parseJsonArray(film.availableResolutions);
+                  return opts.length > 0 ? (
+                    <select
+                      value={film.resolution}
+                      onChange={(e) => updateFilm(i, "resolution", e.target.value)}
+                      className={selectClass}
+                    >
+                      {opts.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <select
+                      value={film.resolution}
+                      onChange={(e) => updateFilm(i, "resolution", e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="2K">2K</option>
+                      <option value="4K">4K</option>
+                      <option value="8K">8K</option>
+                    </select>
+                  );
+                })()}
               </Field>
               <Field label="Domemaster Format" className="!mb-2">
                 <input
@@ -441,24 +472,54 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
                 />
               </Field>
               <Field label="Soundmix" className="!mb-2">
-                <select
-                  value={film.soundmix}
-                  onChange={(e) => updateFilm(i, "soundmix", e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="5.1">5.1</option>
-                  <option value="7.1">7.1</option>
-                  <option value="Stereo">Stereo</option>
-                  <option value="Mono">Mono</option>
-                </select>
+                {(() => {
+                  const opts = parseJsonArray(film.availableSoundmixes);
+                  return opts.length > 0 ? (
+                    <select
+                      value={film.soundmix}
+                      onChange={(e) => updateFilm(i, "soundmix", e.target.value)}
+                      className={selectClass}
+                    >
+                      {opts.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <select
+                      value={film.soundmix}
+                      onChange={(e) => updateFilm(i, "soundmix", e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="5.1">5.1</option>
+                      <option value="7.1">7.1</option>
+                      <option value="Stereo">Stereo</option>
+                      <option value="Mono">Mono</option>
+                    </select>
+                  );
+                })()}
               </Field>
               <Field label="Language" className="!mb-2">
-                <input
-                  type="text"
-                  value={film.language}
-                  onChange={(e) => updateFilm(i, "language", e.target.value)}
-                  className={inputClass}
-                />
+                {(() => {
+                  const langs = parseJsonArray(film.availableLanguages);
+                  return langs.length > 0 ? (
+                    <select
+                      value={film.language}
+                      onChange={(e) => updateFilm(i, "language", e.target.value)}
+                      className={selectClass}
+                    >
+                      {langs.map((l) => (
+                        <option key={l} value={l}>{l}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={film.language}
+                      onChange={(e) => updateFilm(i, "language", e.target.value)}
+                      className={inputClass}
+                    />
+                  );
+                })()}
               </Field>
               <Field label="Runtime (min)" className="!mb-2">
                 <input

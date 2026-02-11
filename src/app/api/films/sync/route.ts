@@ -6,9 +6,8 @@ import { fetchFilmsFromSheet } from "@/lib/google-sheets";
  * POST /api/films/sync
  *
  * Syncs the film catalogue from Google Sheets.
- * Upserts films by matching on googleSheetRow.
- * Films in DB that no longer exist in the sheet are left untouched
- * (they may have been removed intentionally or the sheet was filtered).
+ * Reads headers dynamically, maps to Film fields.
+ * Upserts films by matching on googleSheetRow or title.
  */
 export async function POST() {
   try {
@@ -18,10 +17,12 @@ export async function POST() {
     let updated = 0;
 
     for (const sf of sheetFilms) {
-      // Try to find existing film by googleSheetRow
       const existing = await prisma.film.findFirst({
         where: { googleSheetRow: sf.rowNumber },
       });
+
+      const toJson = (arr: string[]) =>
+        arr.length > 0 ? JSON.stringify(arr) : null;
 
       const filmData = {
         title: sf.title,
@@ -34,18 +35,15 @@ export async function POST() {
         meVersionOfSound: sf.meVersionOfSound,
         runtime: sf.runtime,
         originalLanguage: sf.originalLanguage,
-        availableLanguages:
-          sf.availableLanguages.length > 0
-            ? JSON.stringify(sf.availableLanguages)
-            : null,
-        availableDubs:
-          sf.availableDubs.length > 0
-            ? JSON.stringify(sf.availableDubs)
-            : null,
+        availableLanguages: toJson(sf.availableLanguages),
+        availableDubs: toJson(sf.availableDubs),
+        availableResolutions: toJson(sf.availableResolutions),
+        availableSoundmixes: toJson(sf.availableSoundmixes),
         hasTrailerFlat: sf.hasTrailerFlat,
         hasTrailerDome: sf.hasTrailerDome,
         hasPromoMaterials: sf.hasPromoMaterials,
         googleSheetRow: sf.rowNumber,
+        sheetData: JSON.stringify(sf.raw),
       };
 
       if (existing) {
@@ -55,7 +53,6 @@ export async function POST() {
         });
         updated++;
       } else {
-        // Also try to match by exact title (for films added before sync)
         const byTitle = await prisma.film.findFirst({
           where: { title: sf.title, googleSheetRow: null },
         });

@@ -54,6 +54,10 @@ export interface ContractFilmData {
   language: string;
   availableLanguages?: string;
   selectedLanguage?: string;
+  // Available options from catalogue (JSON arrays) for dynamic dropdowns
+  availableResolutions?: string;
+  availableSoundmixes?: string;
+  availableDubs?: string;
 }
 
 export interface ContractFormData {
