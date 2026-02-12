@@ -35,6 +35,7 @@ export interface FilmData {
   originalLanguage: string;
   availableLanguages: string[];
   availableDubs: string[];
+  availableFormats: string[];
   hasTrailerFlat: boolean;
   hasTrailerDome: boolean;
   hasPromoMaterials: boolean;
@@ -57,6 +58,7 @@ export interface ContractFilmData {
   // Available options from catalogue (JSON arrays) for dynamic dropdowns
   availableResolutions?: string;
   availableSoundmixes?: string;
+  availableFormats?: string;
   availableDubs?: string;
 }
 

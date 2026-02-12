@@ -748,10 +748,12 @@ export const FilmScalarFieldEnum = {
   availableDubs: 'availableDubs',
   availableResolutions: 'availableResolutions',
   availableSoundmixes: 'availableSoundmixes',
+  availableFormats: 'availableFormats',
   hasTrailerFlat: 'hasTrailerFlat',
   hasTrailerDome: 'hasTrailerDome',
   hasPromoMaterials: 'hasPromoMaterials',
-  googleSheetRow: 'googleSheetRow',
+  pipedriveProductId: 'pipedriveProductId',
+  googleSheetTab: 'googleSheetTab',
   sheetData: 'sheetData',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -807,13 +809,6 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 /**

@@ -6,8 +6,8 @@ import { fetchFilmsFromSheet } from "@/lib/google-sheets";
  * POST /api/films/sync
  *
  * Syncs the film catalogue from Google Sheets.
- * Reads headers dynamically, maps to Film fields.
- * Upserts films by matching on googleSheetRow or title.
+ * Each tab = one film. Variant rows are aggregated into arrays.
+ * Upserts films by matching on googleSheetTab or title.
  */
 export async function POST() {
   try {
@@ -18,7 +18,7 @@ export async function POST() {
 
     for (const sf of sheetFilms) {
       const existing = await prisma.film.findFirst({
-        where: { googleSheetRow: sf.rowNumber },
+        where: { googleSheetTab: sf.sheetTab },
       });
 
       const toJson = (arr: string[]) =>
@@ -27,22 +27,24 @@ export async function POST() {
       const filmData = {
         title: sf.title,
         titleCz: sf.titleCz,
-        directors: sf.directors,
-        yearOfProduction: sf.yearOfProduction,
+        directors: sf.directors || null,
+        yearOfProduction: sf.yearOfProduction || null,
         resolution: sf.resolution,
         domemasterFormat: sf.domemasterFormat,
         soundmix: sf.soundmix,
         meVersionOfSound: sf.meVersionOfSound,
-        runtime: sf.runtime,
+        runtime: sf.runtime || null,
         originalLanguage: sf.originalLanguage,
         availableLanguages: toJson(sf.availableLanguages),
         availableDubs: toJson(sf.availableDubs),
         availableResolutions: toJson(sf.availableResolutions),
         availableSoundmixes: toJson(sf.availableSoundmixes),
+        availableFormats: toJson(sf.availableFormats),
         hasTrailerFlat: sf.hasTrailerFlat,
         hasTrailerDome: sf.hasTrailerDome,
         hasPromoMaterials: sf.hasPromoMaterials,
-        googleSheetRow: sf.rowNumber,
+        pipedriveProductId: sf.pipedriveProductId || null,
+        googleSheetTab: sf.sheetTab,
         sheetData: JSON.stringify(sf.raw),
       };
 
@@ -54,7 +56,7 @@ export async function POST() {
         updated++;
       } else {
         const byTitle = await prisma.film.findFirst({
-          where: { title: sf.title, googleSheetRow: null },
+          where: { title: sf.title, googleSheetTab: null },
         });
 
         if (byTitle) {

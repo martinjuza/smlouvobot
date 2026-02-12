@@ -124,23 +124,25 @@ model Film {
   id               String @id @default(uuid())
   title            String
   titleCz          String?
-  directors        String
-  yearOfProduction String
+  directors        String?
+  yearOfProduction String?
   resolution       String @default("2K")
   domemasterFormat String @default("png image sequence domemaster")
   soundmix         String @default("5.1")
   meVersionOfSound Boolean @default(true)
-  runtime          String
+  runtime          String?
   originalLanguage String @default("EN")
-  availableLanguages String? // JSON array
-  availableDubs    String? // JSON array
+  availableLanguages   String? // JSON array, e.g. ["CZ","EN"]
+  availableDubs        String? // JSON array
   availableResolutions String? // JSON array, e.g. ["2K","4K","8K"]
   availableSoundmixes  String? // JSON array, e.g. ["5.1","Stereo"]
+  availableFormats     String? // JSON array, e.g. ["PNG","MOV","h264"]
   hasTrailerFlat   Boolean @default(true)
   hasTrailerDome   Boolean @default(true)
   hasPromoMaterials Boolean @default(true)
-  googleSheetRow   Int?
-  sheetData        String? // Full raw row from Google Sheet as JSON
+  pipedriveProductId String? // PD product ID from Google Sheets
+  googleSheetTab   String?  // Tab name in Google Sheet (one tab per film)
+  sheetData        String?  // Full raw data from Google Sheet as JSON
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

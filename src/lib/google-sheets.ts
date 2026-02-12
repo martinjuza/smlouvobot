@@ -1,15 +1,17 @@
 /**
  * Google Sheets integration for the film catalogue.
  *
- * Reads the sheet DYNAMICALLY based on column headers (row 1).
- * Headers are matched case-insensitively with aliases for CZ/EN.
- * Any column not matching a known field is stored in `raw`.
+ * Sheet structure: each tab = one film.
+ * Row 1 = headers, rows 2+ = variant combinations (language × resolution × format × soundmix).
+ * We aggregate unique values from all rows into arrays.
+ *
+ * Expected columns (case-insensitive):
+ *   PD product ID, EN, CZ, Languages, Version, Resolution, Format, Soundmix, Year, Directors
  *
  * Environment variables:
  *   GOOGLE_SERVICE_ACCOUNT_EMAIL  – Service account email
  *   GOOGLE_PRIVATE_KEY            – Service account private key (PEM)
  *   GOOGLE_SHEET_ID               – Spreadsheet ID from the URL
- *   GOOGLE_SHEET_NAME             – Sheet/tab name (default: "Films")
  */
 
 import { google } from "googleapis";
@@ -29,87 +31,85 @@ export interface SheetFilmRow {
   availableDubs: string[];
   availableResolutions: string[];
   availableSoundmixes: string[];
+  availableFormats: string[];
   hasTrailerFlat: boolean;
   hasTrailerDome: boolean;
   hasPromoMaterials: boolean;
-  rowNumber: number;
-  /** Full raw row data keyed by original header name */
+  pipedriveProductId: string;
+  sheetTab: string;
+  /** Full raw data from all rows as JSON */
   raw: Record<string, string>;
 }
 
 // Map of normalized header → field key
 const HEADER_MAP: Record<string, string> = {
-  // Title
+  // PD product ID
+  "pd product id": "pipedriveProductId",
+  "product id": "pipedriveProductId",
+  productid: "pipedriveProductId",
+  // English title
+  en: "title",
+  "en title": "title",
+  "english title": "title",
   title: "title",
   "film title": "title",
   name: "title",
   "název": "title",
   film: "title",
-  // Title CZ
+  // Czech title
+  cz: "titleCz",
+  "cz title": "titleCz",
+  "czech title": "titleCz",
   "title cz": "titleCz",
   "název cz": "titleCz",
   "český název": "titleCz",
   titlecz: "titleCz",
+  // Languages (per-row value, aggregated)
+  languages: "language",
+  language: "language",
+  jazyk: "language",
+  jazyky: "language",
+  // Version / Runtime
+  version: "runtime",
+  runtime: "runtime",
+  "runtime (min)": "runtime",
+  "délka": "runtime",
+  "délka (min)": "runtime",
+  // Resolution (per-row value, aggregated)
+  resolution: "resolution",
+  "rozlišení": "resolution",
+  // Format (per-row value, aggregated)
+  format: "format",
+  "formát": "format",
+  "domemaster format": "format",
+  domemaster: "format",
+  "formát domemaster": "format",
+  // Soundmix (per-row value, aggregated)
+  soundmix: "soundmix",
+  "sound mix": "soundmix",
+  zvuk: "soundmix",
+  "zvuková stopa": "soundmix",
+  // Year
+  year: "yearOfProduction",
+  "year of production": "yearOfProduction",
+  rok: "yearOfProduction",
+  "rok výroby": "yearOfProduction",
   // Directors
   directors: "directors",
   director: "directors",
   "režisér": "directors",
   "režiséři": "directors",
   "režie": "directors",
-  // Year
-  year: "yearOfProduction",
-  "year of production": "yearOfProduction",
-  rok: "yearOfProduction",
-  "rok výroby": "yearOfProduction",
-  // Resolution (single default value)
-  resolution: "resolution",
-  "rozlišení": "resolution",
-  // Available Resolutions (comma-separated list)
-  "available resolutions": "availableResolutions",
-  resolutions: "availableResolutions",
-  "dostupná rozlišení": "availableResolutions",
-  // Domemaster Format
-  "domemaster format": "domemasterFormat",
-  domemaster: "domemasterFormat",
-  format: "domemasterFormat",
-  "formát domemaster": "domemasterFormat",
-  // Soundmix (single default value)
-  soundmix: "soundmix",
-  "sound mix": "soundmix",
-  zvuk: "soundmix",
-  "zvuková stopa": "soundmix",
-  // Available Soundmixes (comma-separated list)
-  "available soundmixes": "availableSoundmixes",
-  soundmixes: "availableSoundmixes",
   // M&E
   "m&e": "meVersionOfSound",
   "m&e version": "meVersionOfSound",
   "m&e version of sound": "meVersionOfSound",
   me: "meVersionOfSound",
-  // Runtime
-  runtime: "runtime",
-  "délka": "runtime",
-  "runtime (min)": "runtime",
-  "délka (min)": "runtime",
-  // Original Language
-  "original language": "originalLanguage",
-  language: "originalLanguage",
-  jazyk: "originalLanguage",
-  "původní jazyk": "originalLanguage",
-  // Available Languages (comma-separated)
-  "available languages": "availableLanguages",
-  languages: "availableLanguages",
-  "dostupné jazyky": "availableLanguages",
-  jazyky: "availableLanguages",
-  "subtitle languages": "availableLanguages",
-  subtitles: "availableLanguages",
-  titulky: "availableLanguages",
   // Available Dubs (comma-separated)
   "available dubs": "availableDubs",
   dubs: "availableDubs",
   dabingy: "availableDubs",
   dabing: "availableDubs",
-  "dostupné dabingy": "availableDubs",
   // Trailer flat
   "trailer flat": "hasTrailerFlat",
   "has trailer flat": "hasTrailerFlat",
@@ -121,6 +121,9 @@ const HEADER_MAP: Record<string, string> = {
   "has promo materials": "hasPromoMaterials",
   "propagační materiály": "hasPromoMaterials",
 };
+
+// Fields that get aggregated from multiple rows into unique arrays
+const AGGREGATED_FIELDS = new Set(["language", "resolution", "format", "soundmix"]);
 
 function getAuth() {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -164,9 +167,38 @@ function normalizeHeader(h: string): string {
   return h.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+/** Collect unique non-empty values from an array */
+function uniqueNonEmpty(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter((v) => {
+    const trimmed = v.trim();
+    if (!trimmed || seen.has(trimmed)) return false;
+    seen.add(trimmed);
+    return true;
+  });
+}
+
+/** Resolution sort order for consistent display */
+const RESOLUTION_ORDER: Record<string, number> = {
+  "1k": 1,
+  "2k": 2,
+  "3k": 3,
+  "4k": 4,
+  "5k": 5,
+  "6k": 6,
+  "8k": 7,
+};
+
+function sortResolutions(resolutions: string[]): string[] {
+  return [...resolutions].sort((a, b) => {
+    const orderA = RESOLUTION_ORDER[a.toLowerCase()] ?? 99;
+    const orderB = RESOLUTION_ORDER[b.toLowerCase()] ?? 99;
+    return orderA - orderB;
+  });
+}
+
 export async function fetchFilmsFromSheet(): Promise<SheetFilmRow[]> {
   const sheetId = process.env.GOOGLE_SHEET_ID;
-  const sheetName = process.env.GOOGLE_SHEET_NAME || "Films";
 
   if (!sheetId) {
     throw new Error("Missing GOOGLE_SHEET_ID");
@@ -175,84 +207,163 @@ export async function fetchFilmsFromSheet(): Promise<SheetFilmRow[]> {
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
 
-  // Read the entire sheet including headers
-  const response = await sheets.spreadsheets.values.get({
+  // 1. Get all sheet/tab names
+  const spreadsheet = await sheets.spreadsheets.get({
     spreadsheetId: sheetId,
-    range: `${sheetName}`,
+    fields: "sheets.properties.title",
   });
 
-  const allRows = response.data.values;
-  if (!allRows || allRows.length < 2) {
+  const tabNames =
+    spreadsheet.data.sheets
+      ?.map((s) => s.properties?.title)
+      .filter((t): t is string => !!t) ?? [];
+
+  if (tabNames.length === 0) {
     return [];
   }
 
-  // Row 0 = headers
-  const headers = allRows[0].map((h: string) => String(h));
-  const dataRows = allRows.slice(1);
+  // 2. Batch-read all tabs at once
+  const ranges = tabNames.map((name) => `'${name}'`);
+  const batchResponse = await sheets.spreadsheets.values.batchGet({
+    spreadsheetId: sheetId,
+    ranges,
+  });
 
-  // Build column index → field mapping
-  const colMapping: { index: number; field: string | null; header: string }[] =
-    headers.map((h: string, i: number) => {
-      const normalized = normalizeHeader(h);
-      const field = HEADER_MAP[normalized] || null;
-      return { index: i, field, header: h };
-    });
+  const valueRanges = batchResponse.data.valueRanges ?? [];
 
-  // Find the title column (required)
-  const titleCol = colMapping.find((c) => c.field === "title");
-  if (!titleCol) {
-    throw new Error(
-      `No "Title" column found in headers: ${headers.join(", ")}`
-    );
-  }
+  // 3. Parse each tab into a SheetFilmRow
+  const films: SheetFilmRow[] = [];
 
-  return dataRows
-    .map((row, rowIdx) => {
-      const title = (row[titleCol.index] || "").trim();
-      if (!title) return null;
+  for (let i = 0; i < tabNames.length; i++) {
+    const tabName = tabNames[i];
+    const allRows = valueRanges[i]?.values;
 
-      // Build raw data object (all columns keyed by original header)
-      const raw: Record<string, string> = {};
-      colMapping.forEach((col) => {
-        raw[col.header] = (row[col.index] || "").trim();
+    if (!allRows || allRows.length < 2) {
+      continue; // Skip empty tabs or tabs with only headers
+    }
+
+    // Row 0 = headers
+    const headers = allRows[0].map((h: string) => String(h));
+    const dataRows = allRows.slice(1);
+
+    // Build column index → field mapping
+    const colMapping: { index: number; field: string | null; header: string }[] =
+      headers.map((h: string, idx: number) => {
+        const normalized = normalizeHeader(h);
+        const field = HEADER_MAP[normalized] || null;
+        return { index: idx, field, header: h };
       });
 
-      // Extract known fields
-      const get = (field: string): string => {
-        const col = colMapping.find((c) => c.field === field);
-        if (!col) return "";
-        return (row[col.index] || "").trim();
-      };
+    // Helper: get cell value for a field from a given row
+    const getCell = (row: string[], field: string): string => {
+      const col = colMapping.find((c) => c.field === field);
+      if (!col) return "";
+      return (row[col.index] || "").trim();
+    };
 
-      const getList = (field: string): string[] => {
-        return parseList(get(field));
-      };
+    // Collect values from all rows for aggregated fields
+    const allLanguages: string[] = [];
+    const allResolutions: string[] = [];
+    const allFormats: string[] = [];
+    const allSoundmixes: string[] = [];
 
-      const getBool = (field: string): boolean => {
-        return parseBool(get(field));
-      };
+    for (const row of dataRows) {
+      const lang = getCell(row, "language");
+      if (lang) allLanguages.push(lang);
 
-      return {
-        title,
-        titleCz: get("titleCz") || null,
-        directors: get("directors"),
-        yearOfProduction: get("yearOfProduction"),
-        resolution: get("resolution") || "2K",
-        domemasterFormat: get("domemasterFormat") || "png image sequence domemaster",
-        soundmix: get("soundmix") || "5.1",
-        meVersionOfSound: getBool("meVersionOfSound"),
-        runtime: get("runtime"),
-        originalLanguage: get("originalLanguage") || "EN",
-        availableLanguages: getList("availableLanguages"),
-        availableDubs: getList("availableDubs"),
-        availableResolutions: getList("availableResolutions"),
-        availableSoundmixes: getList("availableSoundmixes"),
-        hasTrailerFlat: getBool("hasTrailerFlat"),
-        hasTrailerDome: getBool("hasTrailerDome"),
-        hasPromoMaterials: getBool("hasPromoMaterials"),
-        rowNumber: rowIdx + 2,
-        raw,
-      };
-    })
-    .filter((r): r is SheetFilmRow => r !== null);
+      const res = getCell(row, "resolution");
+      if (res) allResolutions.push(res);
+
+      const fmt = getCell(row, "format");
+      if (fmt) allFormats.push(fmt);
+
+      const sm = getCell(row, "soundmix");
+      if (sm) allSoundmixes.push(sm);
+    }
+
+    // Take scalar values from the first data row
+    const firstRow = dataRows[0];
+    const title = getCell(firstRow, "title") || tabName;
+    const titleCz = getCell(firstRow, "titleCz") || null;
+    const directors = getCell(firstRow, "directors");
+    const yearOfProduction = getCell(firstRow, "yearOfProduction");
+    const runtime = getCell(firstRow, "runtime");
+    const pipedriveProductId = getCell(firstRow, "pipedriveProductId");
+
+    // Unique aggregated values
+    const availableLanguages = uniqueNonEmpty(allLanguages);
+    const availableResolutions = sortResolutions(uniqueNonEmpty(allResolutions));
+    const availableFormats = uniqueNonEmpty(allFormats);
+    const availableSoundmixes = uniqueNonEmpty(allSoundmixes);
+
+    // Pick defaults from available options
+    const resolution =
+      availableResolutions.find((r) => r.toUpperCase() === "4K") ||
+      availableResolutions[0] ||
+      "2K";
+    const soundmix =
+      availableSoundmixes.find((s) => s === "5.1") ||
+      availableSoundmixes[0] ||
+      "5.1";
+    const domemasterFormat = availableFormats[0] || "png image sequence domemaster";
+    const originalLanguage = availableLanguages[0] || "EN";
+
+    // Build raw data for reference
+    const raw: Record<string, string> = {
+      tabName,
+      pipedriveProductId,
+      title,
+      titleCz: titleCz || "",
+      directors,
+      yearOfProduction,
+      runtime,
+      languages: availableLanguages.join(", "),
+      resolutions: availableResolutions.join(", "),
+      formats: availableFormats.join(", "),
+      soundmixes: availableSoundmixes.join(", "),
+      totalVariants: String(dataRows.length),
+    };
+
+    // Check for boolean fields (from any row)
+    let meVersionOfSound = false;
+    let hasTrailerFlat = false;
+    let hasTrailerDome = false;
+    let hasPromoMaterials = false;
+    const availableDubs: string[] = [];
+
+    for (const row of dataRows) {
+      if (parseBool(getCell(row, "meVersionOfSound"))) meVersionOfSound = true;
+      if (parseBool(getCell(row, "hasTrailerFlat"))) hasTrailerFlat = true;
+      if (parseBool(getCell(row, "hasTrailerDome"))) hasTrailerDome = true;
+      if (parseBool(getCell(row, "hasPromoMaterials"))) hasPromoMaterials = true;
+      const dubs = parseList(getCell(row, "availableDubs"));
+      availableDubs.push(...dubs);
+    }
+
+    films.push({
+      title,
+      titleCz,
+      directors,
+      yearOfProduction,
+      resolution,
+      domemasterFormat,
+      soundmix,
+      meVersionOfSound,
+      runtime,
+      originalLanguage,
+      availableLanguages,
+      availableDubs: uniqueNonEmpty(availableDubs),
+      availableResolutions,
+      availableSoundmixes,
+      availableFormats,
+      hasTrailerFlat,
+      hasTrailerDome,
+      hasPromoMaterials,
+      pipedriveProductId,
+      sheetTab: tabName,
+      raw,
+    });
+  }
+
+  return films;
 }

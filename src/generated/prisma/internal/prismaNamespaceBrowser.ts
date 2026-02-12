@@ -153,10 +153,12 @@ export const FilmScalarFieldEnum = {
   availableDubs: 'availableDubs',
   availableResolutions: 'availableResolutions',
   availableSoundmixes: 'availableSoundmixes',
+  availableFormats: 'availableFormats',
   hasTrailerFlat: 'hasTrailerFlat',
   hasTrailerDome: 'hasTrailerDome',
   hasPromoMaterials: 'hasPromoMaterials',
-  googleSheetRow: 'googleSheetRow',
+  pipedriveProductId: 'pipedriveProductId',
+  googleSheetTab: 'googleSheetTab',
   sheetData: 'sheetData',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

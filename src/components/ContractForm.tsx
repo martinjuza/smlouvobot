@@ -28,6 +28,7 @@ interface FilmOption {
   availableDubs?: string;
   availableResolutions?: string;
   availableSoundmixes?: string;
+  availableFormats?: string;
 }
 
 interface ContractFormProps {
@@ -199,6 +200,7 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
       availableDubs: filmOpt.availableDubs || undefined,
       availableResolutions: filmOpt.availableResolutions || undefined,
       availableSoundmixes: filmOpt.availableSoundmixes || undefined,
+      availableFormats: filmOpt.availableFormats || undefined,
     };
     update("films", [...data.films, newFilm]);
   };
@@ -463,13 +465,28 @@ export default function ContractForm({ contractId, initialData }: ContractFormPr
                   );
                 })()}
               </Field>
-              <Field label="Domemaster Format" className="!mb-2">
-                <input
-                  type="text"
-                  value={film.domemasterFormat}
-                  onChange={(e) => updateFilm(i, "domemasterFormat", e.target.value)}
-                  className={inputClass}
-                />
+              <Field label="Format" className="!mb-2">
+                {(() => {
+                  const opts = parseJsonArray(film.availableFormats);
+                  return opts.length > 0 ? (
+                    <select
+                      value={film.domemasterFormat}
+                      onChange={(e) => updateFilm(i, "domemasterFormat", e.target.value)}
+                      className={selectClass}
+                    >
+                      {opts.map((f) => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={film.domemasterFormat}
+                      onChange={(e) => updateFilm(i, "domemasterFormat", e.target.value)}
+                      className={inputClass}
+                    />
+                  );
+                })()}
               </Field>
               <Field label="Soundmix" className="!mb-2">
                 {(() => {
