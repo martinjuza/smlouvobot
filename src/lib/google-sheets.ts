@@ -8,10 +8,15 @@
  * Expected columns (case-insensitive):
  *   PD product ID, EN, CZ, Languages, Version, Resolution, Format, Soundmix, Year, Directors
  *
- * Environment variables:
- *   GOOGLE_SERVICE_ACCOUNT_EMAIL  – Service account email
- *   GOOGLE_PRIVATE_KEY            – Service account private key (PEM)
- *   GOOGLE_SHEET_ID               – Spreadsheet ID from the URL
+ * Authentication (choose one):
+ *   Option A – API Key (simple, sheet must be shared "Anyone with the link"):
+ *     GOOGLE_API_KEY  – Google API key from Cloud Console
+ *   Option B – Service Account (sheet shared with the service account email):
+ *     GOOGLE_SERVICE_ACCOUNT_EMAIL  – Service account email
+ *     GOOGLE_PRIVATE_KEY            – Service account private key (PEM)
+ *
+ * Always required:
+ *   GOOGLE_SHEET_ID  – Spreadsheet ID from the URL
  */
 
 import { google } from "googleapis";
@@ -122,24 +127,33 @@ const HEADER_MAP: Record<string, string> = {
   "propagační materiály": "hasPromoMaterials",
 };
 
-// Fields that get aggregated from multiple rows into unique arrays
-const AGGREGATED_FIELDS = new Set(["language", "resolution", "format", "soundmix"]);
-
-function getAuth() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-
-  if (!email || !key) {
-    throw new Error(
-      "Missing GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY"
-    );
+/**
+ * Returns { auth, key } for the Google Sheets API.
+ * - If GOOGLE_API_KEY is set → use API key (sheet must be public)
+ * - If service account credentials are set → use JWT
+ * - Otherwise → error
+ */
+function getSheetsClient() {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (apiKey) {
+    return { sheets: google.sheets({ version: "v4" }), key: apiKey };
   }
 
-  return new google.auth.JWT({
-    email,
-    key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-  });
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const pk = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+
+  if (email && pk) {
+    const auth = new google.auth.JWT({
+      email,
+      key: pk,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    });
+    return { sheets: google.sheets({ version: "v4", auth }), key: undefined };
+  }
+
+  throw new Error(
+    "Missing Google Sheets credentials. Set GOOGLE_API_KEY (for public sheets) or GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY."
+  );
 }
 
 function parseBool(val: string | undefined): boolean {
@@ -204,12 +218,12 @@ export async function fetchFilmsFromSheet(): Promise<SheetFilmRow[]> {
     throw new Error("Missing GOOGLE_SHEET_ID");
   }
 
-  const auth = getAuth();
-  const sheets = google.sheets({ version: "v4", auth });
+  const { sheets, key } = getSheetsClient();
 
   // 1. Get all sheet/tab names
   const spreadsheet = await sheets.spreadsheets.get({
     spreadsheetId: sheetId,
+    key,
     fields: "sheets.properties.title",
   });
 
@@ -226,6 +240,7 @@ export async function fetchFilmsFromSheet(): Promise<SheetFilmRow[]> {
   const ranges = tabNames.map((name) => `'${name}'`);
   const batchResponse = await sheets.spreadsheets.values.batchGet({
     spreadsheetId: sheetId,
+    key,
     ranges,
   });
 
