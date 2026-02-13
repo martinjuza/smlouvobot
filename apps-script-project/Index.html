@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background-color: #f8f9fa; padding-bottom: 60px; font-family: 'Segoe UI', sans-serif; }
+.container { max-width: 850px; margin: 30px auto; }
+.section-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; border-left: 6px solid #FFD700; }
+h2 { text-align: center; margin-bottom: 30px; font-weight: 800; color: #212529; }
+h4 { margin-bottom: 20px; color: #495057; font-size: 1.25rem; font-weight: 700; }
+.form-label { font-weight: 600; font-size: 0.9rem; color: #343a40; }
+.text-danger { color: #dc3545; font-weight: bold; margin-left: 3px; }
+.hidden { display: none !important; }
+.btn-warning { background-color: #FFD700; border: none; font-weight: 700; color: #000; }
+.btn-warning:hover { background-color: #e6c200; }
+#loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+.currency-addon { background-color: #e9ecef; font-weight: bold; color: #495057; min-width: 45px; text-align: center; }
+.marketing-box { border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; background-color: #fff; margin-top: 15px; border-left: 4px solid #adb5bd; }
+</style>
+</head>
+<body>
+<div id="loadingOverlay" class="hidden">
+<div class="spinner-border text-warning" style="width: 3rem; height: 3rem;" role="status"></div>
+<div class="mt-3 fw-bold">Pracuji...</div>
+</div>
+<div class="container">
+<h2>Generátor Smluv Krutart v12</h2>
+<form id="contractForm">
+<input type="hidden" id="dealId" name="dealId">
+<input type="hidden" id="orgId" name="orgId">
+<div class="section-card" style="border-left-color: #0d6efd;">
+<div class="d-flex justify-content-between align-items-center">
+<h4>Typ Smlouvy</h4>
+<div class="btn-group" role="group">
+<input type="radio" class="btn-check" name="contractType" id="typeSingle" value="Single licence" checked onchange="toggleContractType()">
+<label class="btn btn-outline-primary" for="typeSingle">Single Film</label>
+<input type="radio" class="btn-check" name="contractType" id="typeOne" value="One+" onchange="toggleContractType()">
+<label class="btn btn-outline-primary" for="typeOne">One+ Předplatné</label>
+</div>
+</div>
+</div>
+<div class="section-card">
+<h4>Klient a Fakturace</h4>
+<div class="row">
+<div class="col-md-6 mb-3">
+<label class="form-label">Jméno firmy (Legal Name) <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="clientName" data-label="Jméno firmy" required>
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">Jméno Planetária / Venue</label>
+<input type="text" class="form-control" name="venueName" placeholder="Pokud se liší od firmy">
+</div>
+</div>
+<div class="row">
+<div class="col-md-6 mb-3">
+<label class="form-label">Ulice a číslo popisné <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="street" data-label="Ulice" required>
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">Město <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="city" data-label="Město" required>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4 mb-3">
+<label class="form-label">PSČ <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="zip" data-label="PSČ" required>
+</div>
+<div class="col-md-8 mb-3">
+<label class="form-label">Země <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="country" data-label="Země" required>
+</div>
+</div>
+<div class="row">
+<div class="col-md-3 mb-3">
+<label class="form-label">IČ (Business ID) <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="businessId" data-label="IČ" required>
+</div>
+<div class="col-md-3 mb-3">
+<label class="form-label">DIČ (Tax ID)</label>
+<input type="text" class="form-control" name="vatId">
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">Fakturační Email <span class="text-danger">*</span></label>
+<input type="email" class="form-control" name="billingEmail" data-label="Email na fakturaci" required>
+</div>
+</div>
+<hr>
+<div class="row">
+<div class="col-md-6 mb-3">
+<label class="form-label">Decision Maker - Jméno <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="decisionMakerName" data-label="Jméno DM" required>
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">Decision Maker - Příjmení <span class="text-danger">*</span></label>
+<input type="text" class="form-control" name="decisionMakerSurname" data-label="Příjmení DM" required>
+</div>
+</div>
+</div>
+<div class="section-card" id="productSection">
+<h4>Specifikace Filmu</h4>
+<div class="mb-3">
+<label class="form-label fw-bold">Vyberte film <span class="text-danger">*</span></label>
+<select class="form-select" id="filmSelect" name="selectedProduct" data-label="Výběr filmu" onchange="loadFilmDetails(this.value)" required>
+<option value="" disabled selected>Načítám seznam...</option>
+</select>
+</div>
+<div class="row">
+<div class="col-md-6 mb-3"><label class="form-label">Rozlišení <span class="text-danger">*</span></label><select class="form-select" id="resolutionSelect" name="resolution" data-label="Rozlišení" disabled required><option>---</option></select></div>
+<div class="col-md-6 mb-3"><label class="form-label">Formát <span class="text-danger">*</span></label><select class="form-select" id="formatSelect" name="format" data-label="Formát" disabled required><option>---</option></select></div>
+</div>
+<div class="row">
+<div class="col-md-4 mb-3"><label class="form-label">Audio <span class="text-danger">*</span></label><select class="form-select" id="audioSelect" name="audio" data-label="Audio" disabled required><option>---</option></select></div>
+<div class="col-md-4 mb-3"><label class="form-label">Jazyková verze <span class="text-danger">*</span></label><select class="form-select" id="langSelect" name="language" data-label="Jazyk" disabled required><option>---</option></select></div>
+<div class="col-md-4 mb-3"><label class="form-label">Stopáž <span class="text-danger">*</span></label><select class="form-select" id="durationSelect" name="duration" data-label="Stopáž" disabled required><option>---</option></select></div>
+</div>
+</div>
+<div class="section-card">
+<h4>Parametry Smlouvy</h4>
+<div class="row">
+<div class="col-md-6 mb-3">
+<label class="form-label">Jazyk Smlouvy</label>
+<select class="form-select" name="contractLanguage"><option value="EN">Angličtina (EN)</option><option value="CZ">Čeština (CZ)</option></select>
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">Měna</label>
+<select class="form-select" name="currency" id="currencySelect" onchange="updateCurrencySymbols()"><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option><option value="CZK">CZK (Kč)</option></select>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4 mb-3"><label class="form-label">Začátek licence <span class="text-danger">*</span></label><input type="date" class="form-control" name="licenseStart" data-label="Začátek licence" required></div>
+<div class="col-md-4 mb-3" id="licenseEndContainer">
+<label class="form-label">Konec licence <span class="text-danger">*</span></label>
+<input type="date" class="form-control" name="licenseEnd" id="licenseEndInput" data-label="Konec licence" required>
+<div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="licenseUnlimited" id="licenseUnlimited" onchange="toggleEndDate()"><label class="form-check-label small" for="licenseUnlimited">Bez omezení</label></div>
+</div>
+<div class="col-md-4 mb-3"><label class="form-label">Delivery Method</label><select class="form-select" name="deliveryMethod"><option value="FTP">FTP Server</option><option value="HDD">Physical HDD</option></select></div>
+</div>
+</div>
+<div class="section-card">
+<h4>Platební podmínky</h4>
+<div id="onePlusPaymentSection" class="hidden">
+<div class="mb-3">
+<label class="form-label">Cena za období <span class="text-danger">*</span></label>
+<div class="input-group"><input type="number" class="form-control" name="subscriptionPrice" id="subPriceInput" data-label="Cena předplatného"><span class="input-group-text currency-symbol">€</span></div>
+</div>
+<div class="p-3 bg-light rounded border">
+<label class="form-label d-block fw-bold">Splatnost faktury <span class="text-danger">*</span></label>
+<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="paymentTimingOnePlus" id="paySigOne" value="signature" checked onchange="toggleOnePlusDate()"><label class="form-check-label" for="paySigOne">14 dnů po podpisu</label></div>
+<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="paymentTimingOnePlus" id="payDateOne" value="date" onchange="toggleOnePlusDate()"><label class="form-check-label" for="payDateOne">Konkrétní datum</label></div>
+<div id="onePlusSpecificDateDiv" class="hidden mt-2"><input type="date" class="form-control" name="specificPaymentDateOnePlus" id="onePlusDateInput" data-label="Splatnost One+"></div>
+</div>
+</div>
+<div id="singlePaymentSection">
+<div class="mb-3">
+<label class="form-label">Typ platby</label>
+<select class="form-select" id="paymentType" name="paymentType" onchange="togglePaymentFields()">
+<option value="flat_fee">Flat Fee (Jednorázově)</option>
+<option value="installments">Installments (Splátky)</option>
+<option value="ticket_share">Ticket Share</option>
+</select>
+</div>
+<div id="flatFeeFields">
+<div class="mb-3"><label class="form-label">Celková částka <span class="text-danger">*</span></label><div class="input-group"><input type="number" class="form-control" name="totalAmount" id="totalAmountInput" data-label="Celková částka"><span class="input-group-text currency-symbol">€</span></div></div>
+<div class="mb-3 p-3 bg-light rounded border">
+<label class="form-label d-block fw-bold">Splatnost faktury <span class="text-danger">*</span></label>
+<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="paymentTiming" id="paySig" value="signature" checked onchange="togglePaymentDate()"><label class="form-check-label" for="paySig">14 dnů po podpisu</label></div>
+<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="paymentTiming" id="payDat" value="date" onchange="togglePaymentDate()"><label class="form-check-label" for="payDat">Konkrétní datum</label></div>
+<div class="mt-2 hidden" id="specificDateDiv"><input type="date" class="form-control" name="specificPaymentDateInput" id="specificDateInput" data-label="Datum splatnosti"></div>
+</div>
+</div>
+<div id="installmentsContainer" class="hidden">
+<div class="mb-3"><label class="form-label fw-bold">Celková částka (Sčítá se automaticky)</label><div class="input-group"><input type="text" class="form-control bg-light fw-bold text-success" id="totalInstallmentsSumDisplay" readonly placeholder="0"><input type="hidden" id="totalInstallmentsSumHidden" name="totalInstallmentsHidden"><span class="input-group-text currency-symbol">€</span></div></div>
+<div id="installmentsRows" class="p-3 bg-light rounded border mb-3">
+<div class="row mb-2"><div class="col-1 fw-bold pt-2">1.</div><div class="col"><div class="input-group"><input type="number" class="form-control inst-amount" name="inst_amount_1" placeholder="Částka" oninput="recalcInstallments()"><span class="input-group-text currency-symbol">€</span></div></div><div class="col"><input type="date" class="form-control inst-date" name="inst_date_1"></div></div>
+<div class="row mb-2"><div class="col-1 fw-bold pt-2">2.</div><div class="col"><div class="input-group"><input type="number" class="form-control inst-amount" name="inst_amount_2" placeholder="Částka" oninput="recalcInstallments()"><span class="input-group-text currency-symbol">€</span></div></div><div class="col"><input type="date" class="form-control inst-date" name="inst_date_2"></div></div>
+</div>
+<button type="button" class="btn btn-sm btn-outline-secondary" onclick="addInstallmentRow()">+ Přidat další splátku</button>
+</div>
+<div id="ticketShareFields" class="hidden">
+<div class="mb-3"><label class="form-label">Podmínky podílu (Text) <span class="text-danger">*</span></label><textarea class="form-control" name="shareConditions" rows="3" id="shareConditionsInput" data-label="Podmínky podílu"></textarea></div>
+<div class="row">
+<div class="col-md-6 mb-3"><label class="form-label">Minimální garance (MG)?</label><select class="form-select" id="mgSelect" name="minGuarantee" onchange="toggleMG()"><option value="no">Ne</option><option value="yes">Ano</option></select></div>
+<div class="col-md-6 mb-3 hidden" id="mgDetails"><label class="form-label">Částka MG <span class="text-danger">*</span></label><div class="input-group"><input type="number" class="form-control" name="mgAmount" id="mgAmountInput" data-label="Částka MG"><span class="input-group-text currency-symbol">€</span></div><div class="form-check mt-2"><input class="form-check-input" type="checkbox" name="mgCap"><label class="form-check-label">Zastropování (Cap)</label></div></div>
+</div>
+<div class="marketing-box">
+<label class="form-label fw-bold">Odečtení marketingových nákladů?</label>
+<select class="form-select mb-2" id="marketingDeductionSelect" name="marketingDeduction" onchange="toggleMarketing()"><option value="no">Ne</option><option value="yes">Ano</option></select>
+<div class="hidden" id="marketingDetails"><label class="form-label">Výše nákladů k odečtení <span class="text-danger">*</span></label><div class="input-group"><input type="number" class="form-control" name="marketingDeductionAmount" id="marketingAmountInput" data-label="Marketingové náklady"><span class="input-group-text currency-symbol">€</span></div></div>
+</div>
+</div>
+</div>
+</div>
+<button type="button" id="submitBtn" class="btn btn-warning w-100 py-3 fw-bold fs-5 shadow-sm" onclick="validateAndSubmit()">ODESLAT DATA</button>
+</form>
+</div>
+<script>
+var prefillData = <?!= JSON.stringify(prefill) ?>;
+var installmentCount = 2;
+window.onload = function() {
+if(prefillData.dealId) document.getElementById('dealId').value = prefillData.dealId;
+if(prefillData.clientName) document.getElementsByName('clientName')[0].value = prefillData.clientName;
+if(prefillData.street) document.getElementsByName('street')[0].value = prefillData.street;
+if(prefillData.city) document.getElementsByName('city')[0].value = prefillData.city;
+if(prefillData.zip) document.getElementsByName('zip')[0].value = prefillData.zip;
+if(prefillData.country) document.getElementsByName('country')[0].value = prefillData.country;
+if(prefillData.email) document.getElementsByName('billingEmail')[0].value = prefillData.email;
+if(prefillData.vatId) document.getElementById('vatId').value = prefillData.vatId;
+if(prefillData.businessId) document.getElementsByName('businessId')[0].value = prefillData.businessId;
+google.script.run.withSuccessHandler(populateFilmList).getFilmList();
+toggleContractType();
+updateCurrencySymbols();
+      };
+function validateAndSubmit() {
+var form = document.getElementById("contractForm");
+var inputs = form.querySelectorAll("input[required], select[required], textarea[required]");
+var errors = [];
+for (var i = 0; i < inputs.length; i++) {
+var el = inputs[i];
+if (el.offsetParent !== null && !el.value.trim()) {
+errors.push(el.getAttribute("data-label") || el.name);
+            }
+         }
+if (errors.length > 0) { alert("Chybí povinná pole: " + errors.join(", ")); return; }
+document.getElementById("loadingOverlay").classList.remove("hidden");
+var formData = Object.fromEntries(new FormData(form));
+if (formData.paymentType === "installments") formData.totalAmount = document.getElementById("totalInstallmentsSumHidden").value;
+google.script.run.withSuccessHandler(function(resp) {
+document.getElementById("loadingOverlay").classList.add("hidden");
+alert(resp);
+         }).sendToMake(formData);
+      }
+function toggleContractType() {
+var type = document.querySelector('input[name="contractType"]:checked').value;
+var isSingle = (type === "Single licence");
+document.getElementById("productSection").classList.toggle("hidden", !isSingle);
+document.getElementById("licenseEndContainer").classList.toggle("hidden", !isSingle);
+document.getElementById("singlePaymentSection").classList.toggle("hidden", !isSingle);
+document.getElementById("onePlusPaymentSection").classList.toggle("hidden", isSingle);
+document.getElementById("filmSelect").required = isSingle;
+document.getElementById("subPriceInput").required = !isSingle;
+if (!isSingle) toggleOnePlusDate(); else togglePaymentFields();
+      }
+function togglePaymentFields() {
+var type = document.getElementById("paymentType").value;
+document.getElementById("flatFeeFields").classList.toggle("hidden", type !== "flat_fee");
+document.getElementById("installmentsContainer").classList.toggle("hidden", type !== "installments");
+document.getElementById("ticketShareFields").classList.toggle("hidden", type !== "ticket_share");
+document.getElementById("totalAmountInput").required = (type === "flat_fee");
+document.getElementById("shareConditionsInput").required = (type === "ticket_share");
+document.querySelectorAll(".inst-amount, .inst-date").forEach(i => i.required = (type === "installments"));
+if (type === "flat_fee") togglePaymentDate();
+if (type === "ticket_share") { toggleMG(); toggleMarketing(); }
+      }
+function togglePaymentDate() {
+var isDate = document.getElementById("payDat").checked;
+document.getElementById("specificDateDiv").classList.toggle("hidden", !isDate);
+document.getElementById("specificDateInput").required = isDate;
+      }
+function toggleOnePlusDate() {
+var isDate = document.getElementById("payDateOne").checked;
+document.getElementById("onePlusSpecificDateDiv").classList.toggle("hidden", !isDate);
+document.getElementById("onePlusDateInput").required = isDate;
+      }
+function toggleMG() {
+var isYes = (document.getElementById("mgSelect").value === "yes");
+document.getElementById("mgDetails").classList.toggle("hidden", !isYes);
+document.getElementById("mgAmountInput").required = isYes;
+      }
+function toggleMarketing() {
+var isYes = (document.getElementById("marketingDeductionSelect").value === "yes");
+document.getElementById("marketingDetails").classList.toggle("hidden", !isYes);
+document.getElementById("marketingAmountInput").required = isYes;
+      }
+function toggleEndDate() {
+var unl = document.getElementById("licenseUnlimited").checked;
+var input = document.getElementById("licenseEndInput");
+input.disabled = unl; input.required = !unl;
+      }
+function addInstallmentRow() {
+if(installmentCount >= 6) return;
+installmentCount++;
+var div = document.createElement("div");
+div.className = "row mb-2";
+div.innerHTML = `<div class="col-1 fw-bold pt-2">${installmentCount}.</div><div class="col"><div class="input-group"><input type="number" class="form-control inst-amount" name="inst_amount_${installmentCount}" data-label="Částka splátky ${installmentCount}" oninput="recalcInstallments()" required><span class="input-group-text currency-symbol">€</span></div></div><div class="col"><input type="date" class="form-control inst-date" name="inst_date_${installmentCount}" data-label="Datum splátky ${installmentCount}" required></div>`;
+document.getElementById("installmentsRows").appendChild(div);
+updateCurrencySymbols();
+      }
+function recalcInstallments() {
+var sum = 0; document.querySelectorAll('.inst-amount').forEach(i => sum += Number(i.value) || 0);
+document.getElementById("totalInstallmentsSumHidden").value = sum;
+document.getElementById("totalInstallmentsSumDisplay").value = sum.toLocaleString('cs-CZ');
+      }
+function updateCurrencySymbols() {
+var symbol = document.getElementById("currencySelect").value === "USD" ? "$" : (document.getElementById("currencySelect").value === "CZK" ? "Kč" : "€");
+document.querySelectorAll(".currency-symbol").forEach(el => el.innerText = symbol);
+      }
+function populateFilmList(films) {
+var select = document.getElementById("filmSelect");
+select.innerHTML = '<option value="" disabled selected>Vyberte film...</option>';
+films.forEach(f => select.add(new Option(f, f)));
+      }
+function loadFilmDetails(fName) {
+document.getElementById("loadingOverlay").classList.remove("hidden");
+google.script.run.withSuccessHandler(function(d) {
+document.getElementById("loadingOverlay").classList.add("hidden");
+fillS("resolutionSelect", d.resolutions); fillS("formatSelect", d.formats); fillS("audioSelect", d.soundmixes);
+var l = document.getElementById("langSelect"); l.innerHTML = ""; d.languages.forEach(i => l.add(new Option(i,i))); l.add(new Option("Vlastní / TBD","Vlastní / TBD"));
+fillS("durationSelect", d.durations);
+          ["resolutionSelect","formatSelect","audioSelect","langSelect","durationSelect"].forEach(id => {
+document.getElementById(id).disabled = false;
+document.getElementById(id).required = true;
+          });
+        }).getFilmOptions(fName);
+      }
+function fillS(id, items) { var el = document.getElementById(id); el.innerHTML = ""; if(!items || items.length==0) el.add(new Option("N/A","")); else items.forEach(i => el.add(new Option(i,i))); }
+</script>
+</body>
+</html>
