@@ -1,0 +1,14 @@
+# OAuth credentials and tokens
+.token
+.credentials.json
+.clasprc.json
+
+# Apps Script metadata
+.appsscript.json
+
+# Node modules (if any dependencies added later)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

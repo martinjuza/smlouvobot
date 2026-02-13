@@ -1,0 +1,10 @@
+🔐 Starting authentication...
+
+Opening browser for authentication...
+If browser doesn't open, visit this URL:
+
+https://accounts.google.com/o/oauth2/v2/auth?client_id=1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvbn0.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A8888&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fscript.projects+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fscript.deployments+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file&access_type=offline&prompt=consent
+
+Waiting for authentication...
+
+Could not open browser automatically.
